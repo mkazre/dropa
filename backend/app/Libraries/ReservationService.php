@@ -167,11 +167,14 @@ class ReservationService
     }
 
     /**
-     * Tenant authorizes someone else (family member/helper) to collect on
-     * their behalf: mints a one-time code that works exactly like the PIN
-     * in collect() above, without sharing the tenant's own pickup PIN.
+     * A tenant (or a housemate sharing their unit) authorizes someone else
+     * — family member, helper — to collect on the household's behalf: mints
+     * a one-time code that works exactly like the PIN in collect() above,
+     * without sharing anyone's own pickup PIN.
+     *
+     * @param list<int> $allowedTenantIds the household's tenant ids
      */
-    public function generateDelegateCode(int $parcelId, int $tenantId): array
+    public function generateDelegateCode(int $parcelId, array $allowedTenantIds): array
     {
         $parcel = $this->parcels->find($parcelId);
         if ($parcel === null) {
@@ -179,7 +182,7 @@ class ReservationService
         }
 
         $reservation = $this->reservations->find($parcel['reservation_id']);
-        if ($reservation === null || (int) $reservation['tenant_id'] !== $tenantId) {
+        if ($reservation === null || ! in_array((int) $reservation['tenant_id'], $allowedTenantIds, true)) {
             throw new RuntimeException('Parcel not found.');
         }
 

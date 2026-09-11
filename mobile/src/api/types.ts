@@ -33,6 +33,8 @@ export type Me = {
   groups: string[];
   property: Property | null;
   unit: Unit | null;
+  /** Other tenants sharing the same unit — everyone in a household sees each other's parcels. */
+  household: string[];
 };
 
 export type Reservation = {
@@ -45,6 +47,8 @@ export type Reservation = {
   status: 'pending' | 'held' | 'deposited' | 'expired' | 'cancelled';
   expires_at: string;
   created_at: string;
+  /** Which housemate reserved this — present on /reservations/mine (household-wide). */
+  reserved_by?: string;
 };
 
 export type Parcel = {
@@ -59,6 +63,8 @@ export type Parcel = {
   deposited_at: string | null;
   collected_at: string | null;
   status: 'awaiting_deposit' | 'awaiting_collection' | 'collected';
+  /** Which housemate reserved this — present on /parcels/mine (household-wide). */
+  reserved_by?: string;
 };
 
 export type PaymentMethod = {

@@ -17,4 +17,15 @@ class ParcelModel extends Model
         'collected_at', 'reminded_at', 'status',
     ];
     protected $returnType    = 'array';
+
+    /** Parcels visible to a household (shared unit), newest first, with who reserved each one. */
+    public function forHousehold(array $tenantIds): array
+    {
+        return $this->select('parcels.*, users.full_name AS reserved_by')
+            ->join('reservations', 'reservations.id = parcels.reservation_id')
+            ->join('users', 'users.id = reservations.tenant_id')
+            ->whereIn('reservations.tenant_id', $tenantIds)
+            ->orderBy('parcels.id', 'DESC')
+            ->findAll();
+    }
 }

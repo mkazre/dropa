@@ -7,6 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/ui';
 import { ParcelsApi } from '../api';
 import { ApiError } from '../api/client';
+import { useAccessibility } from '../context/AccessibilityContext';
 import type { Parcel } from '../api/types';
 import { colors, radius } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
@@ -14,6 +15,7 @@ import type { AppStackParamList } from '../navigation/types';
 type Props = NativeStackScreenProps<AppStackParamList, 'ParcelDetail'>;
 
 export default function ParcelDetailScreen({ route, navigation }: Props) {
+  const { scale } = useAccessibility();
   const { parcelId } = route.params;
   const [parcel, setParcel] = useState<Parcel | null>(null);
   const [delegating, setDelegating] = useState(false);
@@ -58,11 +60,14 @@ export default function ParcelDetailScreen({ route, navigation }: Props) {
           <Text style={styles.collectedText}>Collected on {new Date(parcel.collected_at!).toLocaleString()}</Text>
         ) : (
           <>
-            <Text style={styles.sub}>Scan this at the locker screen, or tap Collect when you're standing at it.</Text>
+            <Text style={[styles.sub, { fontSize: scale(13.5) }]}>Scan this at the locker screen, or tap Collect when you're standing at it.</Text>
+            {parcel.reserved_by ? <Text style={[styles.reservedBy, { fontSize: scale(12) }]}>Reserved by {parcel.reserved_by}</Text> : null}
 
             <View style={styles.pinRow}>
               {parcel.pickup_pin.split('').map((digit, i) => (
-                <View key={i} style={styles.pinBox}><Text style={styles.pinDigit}>{digit}</Text></View>
+                <View key={i} style={[styles.pinBox, { width: scale(36), height: scale(50) }]}>
+                  <Text style={[styles.pinDigit, { fontSize: scale(22) }]}>{digit}</Text>
+                </View>
               ))}
             </View>
 
@@ -98,7 +103,8 @@ const styles = StyleSheet.create({
   topbar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 22 },
   back: { fontSize: 24, color: colors.ink, width: 24 },
   h2: { fontSize: 17, fontWeight: '800', color: colors.ink, flexShrink: 1 },
-  sub: { color: colors.muted, fontSize: 13.5, textAlign: 'center', lineHeight: 20, marginTop: 4 },
+  sub: { color: colors.muted, textAlign: 'center', lineHeight: 20, marginTop: 4 },
+  reservedBy: { color: colors.signalDeep, fontWeight: '700', marginTop: 8 },
   pinRow: { flexDirection: 'row', gap: 8, marginTop: 22 },
   pinBox: { width: 36, height: 50, borderRadius: 11, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   pinDigit: { color: '#fff', fontSize: 22, fontWeight: '800' },

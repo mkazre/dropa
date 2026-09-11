@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/ui';
 import { ParcelsApi } from '../api';
 import { ApiError } from '../api/client';
+import { useAccessibility } from '../context/AccessibilityContext';
 import { colors, radius } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
 
@@ -14,6 +15,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'Collect'>;
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
 
 export default function CollectScreen({ navigation }: Props) {
+  const { scale } = useAccessibility();
   const [mode, setMode] = useState<'pin' | 'scan'>('pin');
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -87,14 +89,16 @@ export default function CollectScreen({ navigation }: Props) {
         <View style={{ padding: 22, flex: 1 }}>
           <View style={styles.pinRow}>
             {Array.from({ length: 6 }).map((_, i) => (
-              <View key={i} style={styles.pinBox}><Text style={styles.pinDigit}>{pin[i] ?? ''}</Text></View>
+              <View key={i} style={[styles.pinBox, { width: scale(40), height: scale(54) }]}>
+                <Text style={[styles.pinDigit, { fontSize: scale(24) }]}>{pin[i] ?? ''}</Text>
+              </View>
             ))}
           </View>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.keypad}>
             {KEYS.map((k, i) => (
-              <Pressable key={i} disabled={k === '' || loading} style={styles.key} onPress={() => keyTap(k)}>
-                <Text style={styles.keyText}>{k}</Text>
+              <Pressable key={i} disabled={k === '' || loading} style={[styles.key, { paddingVertical: scale(18) }]} onPress={() => keyTap(k)}>
+                <Text style={[styles.keyText, { fontSize: scale(20) }]}>{k}</Text>
               </Pressable>
             ))}
           </View>

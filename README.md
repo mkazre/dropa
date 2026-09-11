@@ -65,6 +65,12 @@ testing without going through the login flow.
   account. Collection itself (`POST /api/v1/parcels/collect`) is intentionally public/unauthenticated: knowing
   the PIN, QR token, or delegate code *is* the authorization, exactly like a physical locker. This is also what
   lets the website's no-login `/collect` page work.
+- Household visibility: a unit is a household, not one person. `/api/v1/reservations/mine` and
+  `/api/v1/parcels/mine` return everything for everyone sharing the tenant's `unit_id` (see
+  `BaseApiController::householdTenantIds()`), each item tagged with `reserved_by` so the app can attribute it.
+  Any housemate can also mint a delegate code for a household parcel. Write actions that aren't purely about
+  visibility (cancelling a reservation) stay restricted to whoever actually created it. `/api/v1/me` also
+  returns `household`: the other tenants' names on the same unit.
 
 ### Notifications
 
@@ -94,10 +100,11 @@ Sign in with any of the demo accounts above (e.g. `tenant@dropa.app` / `DropaTen
 - **Reserve** — pick a size (live per-size availability), get a deposit code to share (native share sheet /
   copy), pay if the property charges a booking fee (opens Ozow/PayFast in the browser, or shows manual
   instructions with a photo-library proof-of-payment upload)
-- **Parcels** — full history; tap an active one for its PIN + a real scannable QR code
-  (`react-native-qrcode-svg`), or to generate and share a delegate collection code
+- **Parcels** — household-wide history (housemates' parcels show "· for {name}"); tap an active one for its
+  PIN + a real scannable QR code (`react-native-qrcode-svg`), or to generate and share a delegate collection code
 - **Collect** — PIN keypad or QR camera scan (`expo-camera`), either resolves through the same API endpoint
-- **Profile** — account details, change password, log out
+- **Profile** — account details, who else shares your unit, a large-text mode toggle (bigger PINs/codes/keypad
+  at the locker — `src/context/AccessibilityContext.tsx`), change password, log out
 - Push notifications: registers the device's Expo push token with the backend on login
   (`app/Libraries/Notifications/PushChannel.php` sends to it)
 

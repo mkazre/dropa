@@ -6,7 +6,6 @@ namespace App\Controllers\Api;
 
 use App\Libraries\ReservationService;
 use App\Models\ParcelModel;
-use App\Models\ReservationModel;
 use RuntimeException;
 
 class ParcelsController extends BaseApiController
@@ -52,25 +51,17 @@ class ParcelsController extends BaseApiController
         return $this->respond($parcel);
     }
 
+    /** Parcels for the whole household (shared unit), not just this login. */
     public function mine()
     {
-        $user         = $this->currentUser();
-        $reservations = model(ReservationModel::class)->where('tenant_id', $user->id)->findColumn('id') ?? [];
-
-        if (empty($reservations)) {
-            return $this->respond([]);
-        }
-
-        return $this->respond(
-            model(ParcelModel::class)->whereIn('reservation_id', $reservations)->orderBy('id', 'DESC')->findAll()
-        );
+        return $this->respond(model(ParcelModel::class)->forHousehold($this->householdTenantIds()));
     }
 
-    /** Tenant mints a one-time code so someone else can collect on their behalf. */
+    /** Any household member mints a one-time code so someone else can collect on the household's behalf. */
     public function createDelegateCode($parcelId)
     {
         try {
-            $parcel = (new ReservationService())->generateDelegateCode((int) $parcelId, (int) $this->currentUser()->id);
+            $parcel = (new ReservationService())->generateDelegateCode((int) $parcelId, $this->householdTenantIds());
         } catch (RuntimeException $e) {
             return $this->fail($e->getMessage());
         }

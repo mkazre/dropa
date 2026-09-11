@@ -35,13 +35,10 @@ class ReservationsController extends BaseApiController
         return $this->respondCreated($reservation);
     }
 
+    /** Reservations for the whole household (shared unit), not just this login. */
     public function mine()
     {
-        $user = $this->currentUser();
-
-        return $this->respond(
-            model(ReservationModel::class)->where('tenant_id', $user->id)->orderBy('id', 'DESC')->findAll()
-        );
+        return $this->respond(model(ReservationModel::class)->forHousehold($this->householdTenantIds()));
     }
 
     public function cancel($id)

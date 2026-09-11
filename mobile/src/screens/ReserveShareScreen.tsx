@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/ui';
 import { ReservationsApi } from '../api';
+import { useAccessibility } from '../context/AccessibilityContext';
 import type { PaymentQuote, Reservation } from '../api/types';
 import { colors, radius } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
@@ -12,6 +13,7 @@ import type { AppStackParamList } from '../navigation/types';
 type Props = NativeStackScreenProps<AppStackParamList, 'ReserveShare'>;
 
 export default function ReserveShareScreen({ route, navigation }: Props) {
+  const { scale } = useAccessibility();
   const { reservationId } = route.params;
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [quote, setQuote] = useState<PaymentQuote | null>(null);
@@ -48,7 +50,7 @@ export default function ReserveShareScreen({ route, navigation }: Props) {
         <Text style={styles.sub}>Share this code with your courier — they'll enter it at the locker to drop off your parcel.</Text>
 
         <View style={styles.codeBox}>
-          <Text style={styles.code}>{code.split('').join(' ')}</Text>
+          <Text style={[styles.code, { fontSize: scale(30) }]}>{code.split('').join(' ')}</Text>
         </View>
 
         <View style={styles.row}>

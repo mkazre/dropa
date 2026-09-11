@@ -6,6 +6,7 @@ namespace App\Controllers\Api;
 
 use App\Models\PropertyModel;
 use App\Models\UnitModel;
+use CodeIgniter\Shield\Models\UserModel;
 
 class AccountController extends BaseApiController
 {
@@ -14,17 +15,21 @@ class AccountController extends BaseApiController
     {
         $user = $this->currentUser();
 
-        $property = $user->property_id ? model(PropertyModel::class)->find($user->property_id) : null;
-        $unit     = $user->unit_id ? model(UnitModel::class)->find($user->unit_id) : null;
+        $property  = $user->property_id ? model(PropertyModel::class)->find($user->property_id) : null;
+        $unit      = $user->unit_id ? model(UnitModel::class)->find($user->unit_id) : null;
+        $household = $user->unit_id
+            ? (new UserModel())->where('unit_id', $user->unit_id)->where('id !=', $user->id)->findColumn('full_name')
+            : [];
 
         return $this->respond([
-            'id'       => $user->id,
-            'name'     => $user->full_name,
-            'email'    => $user->email,
-            'phone'    => $user->phone,
-            'groups'   => $user->getGroups(),
-            'property' => $property,
-            'unit'     => $unit,
+            'id'        => $user->id,
+            'name'      => $user->full_name,
+            'email'     => $user->email,
+            'phone'     => $user->phone,
+            'groups'    => $user->getGroups(),
+            'property'  => $property,
+            'unit'      => $unit,
+            'household' => $household ?: [],
         ]);
     }
 

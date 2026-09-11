@@ -6,6 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParcelsApi } from '../api';
 import type { Parcel } from '../api/types';
 import { EmptyState } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
 
@@ -17,6 +18,7 @@ const statusLabel: Record<Parcel['status'], string> = {
 
 export default function ParcelsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
+  const { me } = useAuth();
   const [parcels, setParcels] = useState<Parcel[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -49,7 +51,10 @@ export default function ParcelsScreen() {
           <Pressable style={styles.row} onPress={() => navigation.navigate('ParcelDetail', { parcelId: item.id })}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>From {item.sender_name ?? 'a courier'}</Text>
-              <Text style={styles.sub}>{item.deposited_at ? new Date(item.deposited_at).toLocaleDateString() : 'Not deposited yet'}</Text>
+              <Text style={styles.sub}>
+                {item.deposited_at ? new Date(item.deposited_at).toLocaleDateString() : 'Not deposited yet'}
+                {item.reserved_by && item.reserved_by !== me?.name ? ` · for ${item.reserved_by}` : ''}
+              </Text>
             </View>
             <Text style={[styles.status, item.status === 'collected' && styles.statusOk]}>{statusLabel[item.status]}</Text>
           </Pressable>

@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import { colors } from './src/theme/tokens';
 
 const ONBOARDING_SEEN_KEY = 'dropa.onboardingSeen';
@@ -50,9 +51,11 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <Gate showOnboarding={showOnboarding} onDoneOnboarding={finishOnboarding} />
-      </AuthProvider>
+      <AccessibilityProvider>
+        <AuthProvider>
+          <Gate showOnboarding={showOnboarding} onDoneOnboarding={finishOnboarding} />
+        </AuthProvider>
+      </AccessibilityProvider>
     </SafeAreaProvider>
   );
 }

@@ -61,7 +61,7 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <Text style={styles.sectionLabel}>Awaiting your collection</Text>
+        <Text style={styles.sectionLabel}>Awaiting collection</Text>
         {parcels.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>No parcels waiting right now.</Text>
@@ -74,7 +74,9 @@ export default function HomeScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.parcelTitle}>From {p.sender_name ?? 'a courier'}</Text>
-                <Text style={styles.parcelSub}>Pickup PIN {p.pickup_pin}</Text>
+                <Text style={styles.parcelSub}>
+                  Pickup PIN {p.pickup_pin}{p.reserved_by && p.reserved_by !== me?.name ? ` · for ${p.reserved_by}` : ''}
+                </Text>
               </View>
               <Text style={styles.parcelStatus}>Awaiting{'\n'}collection</Text>
             </Pressable>
