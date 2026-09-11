@@ -132,6 +132,7 @@ class TenantsController extends BaseController
         }
 
         $users->delete($id);
+        $this->audit('tenant.delete', 'user', (int) $id);
 
         return redirect()->to('/manage/tenants')->with('success', 'Tenant removed.');
     }
@@ -179,6 +180,8 @@ class TenantsController extends BaseController
             "{$property['name']} has set you up on Dropa for unit {$unitNumber}. Sign in with {$email} and this temporary password: {$tempPassword} — you'll be asked to change it.",
             ['email'],
         );
+
+        $this->audit('tenant.invite', 'user', $user->id, ['unit_number' => $unitNumber, 'email' => $email]);
 
         return ['temp_password' => $tempPassword];
     }

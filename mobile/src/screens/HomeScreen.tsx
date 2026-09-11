@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,6 +34,7 @@ export default function HomeScreen() {
   };
 
   const firstName = me?.name?.split(' ')[0] ?? 'there';
+  const brandColor = me?.property?.brand_color || colors.signal;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -41,12 +42,19 @@ export default function HomeScreen() {
         contentContainerStyle={{ padding: 22, paddingBottom: 40 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.ink} />}
       >
-        <Text style={styles.greeting}>Sawubona, {firstName}</Text>
-        <Text style={styles.propertyLine}>{me?.property?.name ?? 'Your property'}{me?.unit ? ` · Unit ${me.unit.unit_number}` : ''}</Text>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greeting}>Sawubona, {firstName}</Text>
+            <Text style={styles.propertyLine}>{me?.property?.name ?? 'Your property'}{me?.unit ? ` · Unit ${me.unit.unit_number}` : ''}</Text>
+          </View>
+          {me?.property?.logo_url ? (
+            <Image source={{ uri: me.property.logo_url }} style={styles.logo} resizeMode="contain" />
+          ) : null}
+        </View>
 
         <View style={styles.tiles}>
           <Pressable style={[styles.tile, styles.tilePrime]} onPress={() => navigation.navigate('ReserveSize')}>
-            <View style={styles.glyph}>
+            <View style={[styles.glyph, { backgroundColor: brandColor }]}>
               <Svg width={20} height={20} viewBox="0 0 24 24"><Path d="M12 19V5M6 11l6-6 6 6" stroke="#241f00" strokeWidth={2.2} fill="none" strokeLinecap="round" strokeLinejoin="round" /></Svg>
             </View>
             <Text style={styles.tileTitlePrime}>Expecting a parcel</Text>
@@ -89,6 +97,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logo: { width: 44, height: 44, borderRadius: 10 },
   greeting: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, color: colors.ink },
   propertyLine: { color: colors.muted, fontSize: 13.5, marginTop: 4 },
   tiles: { flexDirection: 'row', gap: 12, marginTop: 22 },

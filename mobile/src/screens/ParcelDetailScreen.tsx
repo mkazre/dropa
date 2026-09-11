@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Share } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Share, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import QRCode from 'react-native-qrcode-svg';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/ui';
-import { ParcelsApi } from '../api';
+import { ParcelsApi, MaintenanceApi } from '../api';
 import { ApiError } from '../api/client';
 import { useAccessibility } from '../context/AccessibilityContext';
 import type { Parcel } from '../api/types';
@@ -20,6 +20,10 @@ export default function ParcelDetailScreen({ route, navigation }: Props) {
   const [parcel, setParcel] = useState<Parcel | null>(null);
   const [delegating, setDelegating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reporting, setReporting] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [reportSent, setReportSent] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
 
   const load = useCallback(() => {
     ParcelsApi.mine().then((all) => setParcel(all.find((p) => p.id === parcelId) ?? null));
@@ -45,6 +49,21 @@ export default function ParcelDetailScreen({ route, navigation }: Props) {
       setError(e instanceof ApiError ? e.message : 'Could not create a delegate code.');
     } finally {
       setDelegating(false);
+    }
+  };
+
+  const submitReport = async () => {
+    if (!reportText.trim()) return;
+    setReportLoading(true);
+    setError(null);
+    try {
+      await MaintenanceApi.report(reportText.trim(), parcel.id);
+      setReportSent(true);
+      setReporting(false);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Could not send your report.');
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -91,6 +110,28 @@ export default function ParcelDetailScreen({ route, navigation }: Props) {
               />
             )}
             {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            <View style={{ width: '100%', marginTop: 14 }}>
+              {reportSent ? (
+                <Text style={styles.reportSent}>Thanks — we've let your Body Corporate know. ✓</Text>
+              ) : reporting ? (
+                <View style={styles.reportBox}>
+                  <TextInput
+                    value={reportText}
+                    onChangeText={setReportText}
+                    placeholder="What's wrong with this locker?"
+                    placeholderTextColor={colors.muted}
+                    multiline
+                    style={styles.reportInput}
+                  />
+                  <Button title="Send report" onPress={submitReport} loading={reportLoading} style={{ marginTop: 10 }} />
+                </View>
+              ) : (
+                <Pressable onPress={() => setReporting(true)}>
+                  <Text style={styles.reportLink}>Report a problem with this locker</Text>
+                </Pressable>
+              )}
+            </View>
           </>
         )}
       </View>
@@ -115,4 +156,8 @@ const styles = StyleSheet.create({
   delegateCode: { fontSize: 24, fontWeight: '800', letterSpacing: 3, color: colors.ink, marginTop: 6 },
   delegateHint: { fontSize: 12, color: colors.inkSoft, marginTop: 8, textAlign: 'center' },
   error: { color: colors.alert, fontSize: 13, fontWeight: '600', marginTop: 14, textAlign: 'center' },
+  reportLink: { color: colors.muted, fontSize: 12.5, fontWeight: '700', textAlign: 'center', textDecorationLine: 'underline' },
+  reportBox: { backgroundColor: colors.cream, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.md, padding: 14 },
+  reportInput: { minHeight: 70, fontSize: 14, color: colors.ink, textAlignVertical: 'top' },
+  reportSent: { color: colors.ok, fontWeight: '700', fontSize: 13, textAlign: 'center' },
 });

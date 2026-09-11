@@ -45,6 +45,7 @@ class PaymentsController extends BaseController
         }
 
         (new PaymentService())->approveManual((int) $id, (int) auth()->user()->id);
+        $this->audit('payment.approve', 'payment', (int) $id);
 
         return redirect()->to('/manage/payments')->with('success', 'Payment approved.');
     }

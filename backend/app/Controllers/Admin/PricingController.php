@@ -46,6 +46,8 @@ class PricingController extends BaseController
             }
         }
 
+        $this->audit('pricing.update', 'pricing_rules');
+
         return redirect()->to('/admin/pricing')->with('success', 'Platform default pricing updated.');
     }
 }

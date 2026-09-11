@@ -38,13 +38,16 @@ class PropertiesController extends BaseController
 
     public function create()
     {
-        $this->properties->insert([
-            'name'    => $this->request->getPost('name'),
+        $name = $this->request->getPost('name');
+        $id   = $this->properties->insert([
+            'name'    => $name,
             'type'    => $this->request->getPost('type') ?: 'complex',
             'address' => $this->request->getPost('address'),
             'reservation_hold_hours' => (int) ($this->request->getPost('reservation_hold_hours') ?: 48),
             'status'  => 'active',
-        ]);
+        ], true);
+
+        $this->audit('property.create', 'property', $id, ['name' => $name]);
 
         return redirect()->to('/admin/properties')->with('success', 'Property created.');
     }
@@ -73,6 +76,7 @@ class PropertiesController extends BaseController
             'reservation_hold_hours' => (int) $this->request->getPost('reservation_hold_hours'),
             'status'  => $this->request->getPost('status'),
         ]);
+        $this->audit('property.update', 'property', (int) $id);
 
         return redirect()->to('/admin/properties')->with('success', 'Property updated.');
     }
@@ -80,6 +84,7 @@ class PropertiesController extends BaseController
     public function delete($id)
     {
         $this->properties->delete($id);
+        $this->audit('property.delete', 'property', (int) $id);
 
         return redirect()->to('/admin/properties')->with('success', 'Property removed.');
     }

@@ -11,7 +11,7 @@ service('auth')->routes($routes);
 // REST API — RN app, website, kiosk. Token-authenticated except where noted.
 // ---------------------------------------------------------------------
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
-    $routes->post('auth/login', 'AuthController::login');
+    $routes->post('auth/login', 'AuthController::login', ['filter' => 'throttle:10,300']);
 
     $routes->group('', ['filter' => 'tokens'], static function ($routes) {
         $routes->post('auth/logout', 'AuthController::logout');
@@ -26,6 +26,9 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
         $routes->get('parcels/mine', 'ParcelsController::mine');
         $routes->post('parcels/(:num)/delegate', 'ParcelsController::createDelegateCode/$1');
 
+        $routes->post('maintenance-tickets', 'MaintenanceController::create');
+        $routes->get('maintenance-tickets/mine', 'MaintenanceController::mine');
+
         $routes->post('me/push-token', 'AccountController::registerPushToken');
 
         $routes->get('reservations/(:num)/payment-options', 'PaymentsController::options/$1');
@@ -38,8 +41,8 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
     // itself (not by being logged in) — this is what lets a family
     // member/helper collect on a tenant's behalf, or a future kiosk/website
     // collect flow work without an account.
-    $routes->post('parcels/deposit', 'ParcelsController::deposit');
-    $routes->post('parcels/collect', 'ParcelsController::collect');
+    $routes->post('parcels/deposit', 'ParcelsController::deposit', ['filter' => 'throttle:20,60']);
+    $routes->post('parcels/collect', 'ParcelsController::collect', ['filter' => 'throttle:10,60']);
 
     // Browser landing page after an Ozow/PayFast hosted-page redirect.
     $routes->get('payments/return', 'PaymentsController::returnPage');
@@ -68,6 +71,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'su
 
     $routes->get('pricing', 'PricingController::index');
     $routes->post('pricing', 'PricingController::update');
+
+    $routes->get('audit-log', 'AuditLogController::index');
 });
 
 // ---------------------------------------------------------------------
@@ -93,4 +98,10 @@ $routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => '
 
     $routes->get('pricing', 'PricingController::index');
     $routes->post('pricing', 'PricingController::update');
+
+    $routes->get('maintenance', 'MaintenanceController::index');
+    $routes->post('maintenance/(:num)/status', 'MaintenanceController::updateStatus/$1');
+
+    $routes->get('branding', 'BrandingController::edit');
+    $routes->post('branding', 'BrandingController::update');
 });

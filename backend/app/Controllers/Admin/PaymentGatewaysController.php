@@ -67,6 +67,8 @@ class PaymentGatewaysController extends BaseController
             }
         }
 
+        $this->audit('gateways.update', 'payment_gateway_settings', null, ['enabled' => $enabled]);
+
         return redirect()->to('/admin/gateways')->with('success', 'Payment gateway settings updated.');
     }
 }

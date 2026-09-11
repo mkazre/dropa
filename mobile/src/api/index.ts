@@ -52,3 +52,18 @@ export const ParcelsApi = {
   collect: (code: string) => apiRequest<Parcel>('/parcels/collect', { method: 'POST', body: { code }, auth: false }),
   createDelegateCode: (parcelId: number) => apiRequest<Parcel>(`/parcels/${parcelId}/delegate`, { method: 'POST' }),
 };
+
+export type MaintenanceTicket = {
+  id: number;
+  property_id: number;
+  locker_id: number | null;
+  issue: string;
+  status: 'open' | 'in_progress' | 'resolved';
+  created_at: string;
+};
+
+export const MaintenanceApi = {
+  report: (issue: string, parcelId?: number) =>
+    apiRequest<MaintenanceTicket>('/maintenance-tickets', { method: 'POST', body: { issue, parcel_id: parcelId ?? null } }),
+  mine: () => apiRequest<MaintenanceTicket[]>('/maintenance-tickets/mine'),
+};

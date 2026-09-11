@@ -66,6 +66,8 @@ class GatewaySettingsController extends BaseController
             }
         }
 
+        $this->audit('gateways.property_update', 'property', (int) $propertyId, ['enabled' => $enabled]);
+
         return redirect()->to('/manage/gateways')->with('success', 'Payment settings updated for your property.');
     }
 }

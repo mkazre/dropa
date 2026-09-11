@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\AuditLogModel;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -41,5 +42,21 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+    }
+
+    /** Records who did what, for the Super Admin's audit log — never throws, so a logging failure can't break the action it's recording. */
+    protected function audit(string $action, ?string $subject = null, ?int $subjectId = null, array $meta = []): void
+    {
+        try {
+            model(AuditLogModel::class)->insert([
+                'user_id'    => auth()->id(),
+                'action'     => $action,
+                'subject'    => $subject,
+                'subject_id' => $subjectId,
+                'meta'       => $meta === [] ? null : json_encode($meta),
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Audit log write failed: ' . $e->getMessage());
+        }
     }
 }

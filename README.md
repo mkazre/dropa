@@ -87,6 +87,23 @@ php spark reservations:expire   # releases lockers whose hold window passed with
 php spark parcels:remind        # reminds a tenant (at most once/day) about an uncollected parcel
 ```
 
+### Security & operations
+
+- Rate limiting (`app/Filters/ThrottleFilter.php`, CI4's built-in token-bucket `Throttler`): login (10/5min),
+  deposit (20/min) and collect (10/min) are all IP-throttled. This matters specifically because deposit/collect
+  are intentionally public/unauthenticated (see above) — a 6-digit PIN is only 900k combinations, so without
+  this a single IP could brute-force one in minutes.
+- Audit log (`/admin/audit-log`): every meaningful write in either admin panel — property/pricing/gateway
+  changes, tenant invites and removals, payment approvals, maintenance status changes, branding updates — is
+  recorded via `BaseController::audit()` with who did it and when. Never throws (a logging failure can't break
+  the action it's recording).
+- Maintenance ticketing: a tenant can report a problem (optionally tied to the locker behind a specific
+  parcel) from the app; a Body Corporate Admin triages it at `/manage/maintenance`. Starting work on a
+  locker-linked ticket takes that locker `out_of_service` (so it's skipped when reserving); resolving it
+  returns the locker to `available`.
+- White-label branding: a Body Corporate sets their own logo URL and accent colour at `/manage/branding` —
+  both are returned from `/api/v1/me` and shown in the tenant app's Home screen.
+
 ## Mobile (`/mobile`)
 
 Expo-managed React Native app, fully wired to the live API. `npm install`, copy `.env.example` to `.env` (point
@@ -105,6 +122,9 @@ Sign in with any of the demo accounts above (e.g. `tenant@dropa.app` / `DropaTen
 - **Collect** — PIN keypad or QR camera scan (`expo-camera`), either resolves through the same API endpoint
 - **Profile** — account details, who else shares your unit, a large-text mode toggle (bigger PINs/codes/keypad
   at the locker — `src/context/AccessibilityContext.tsx`), change password, log out
+- A parcel's detail screen also has "Report a problem with this locker", filing a maintenance ticket the Body
+  Corporate can see and act on
+- Home shows the property's own logo/accent colour when the Body Corporate has set one
 - Push notifications: registers the device's Expo push token with the backend on login
   (`app/Libraries/Notifications/PushChannel.php` sends to it)
 

@@ -66,6 +66,8 @@ class PricingController extends BaseController
             }
         }
 
+        $this->audit('pricing.property_update', 'property', (int) $propertyId);
+
         return redirect()->to('/manage/pricing')->with('success', 'Pricing updated for your property.');
     }
 }
