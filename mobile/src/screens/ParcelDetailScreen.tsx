@@ -8,6 +8,8 @@ import { Button } from '../components/ui';
 import { ParcelsApi, MaintenanceApi } from '../api';
 import { ApiError } from '../api/client';
 import { useAccessibility } from '../context/AccessibilityContext';
+import { useAuth } from '../context/AuthContext';
+import { attributionSuffix } from '../utils/attribution';
 import type { Parcel } from '../api/types';
 import { colors, radius } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
@@ -16,6 +18,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'ParcelDetail'>;
 
 export default function ParcelDetailScreen({ route, navigation }: Props) {
   const { scale } = useAccessibility();
+  const { me } = useAuth();
   const { parcelId } = route.params;
   const [parcel, setParcel] = useState<Parcel | null>(null);
   const [delegating, setDelegating] = useState(false);
@@ -80,7 +83,11 @@ export default function ParcelDetailScreen({ route, navigation }: Props) {
         ) : (
           <>
             <Text style={[styles.sub, { fontSize: scale(13.5) }]}>Scan this at the locker screen, or tap Collect when you're standing at it.</Text>
-            {parcel.reserved_by ? <Text style={[styles.reservedBy, { fontSize: scale(12) }]}>Reserved by {parcel.reserved_by}</Text> : null}
+            {attributionSuffix(me?.name, parcel.reserved_by, parcel.sent_by) ? (
+              <Text style={[styles.reservedBy, { fontSize: scale(12) }]}>
+                {parcel.sent_by === me?.name ? `Sent to ${parcel.reserved_by}` : `Reserved by ${parcel.reserved_by}`}
+              </Text>
+            ) : null}
 
             <View style={styles.pinRow}>
               {parcel.pickup_pin.split('').map((digit, i) => (

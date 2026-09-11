@@ -40,6 +40,7 @@ class Filters extends BaseFilters
         'tokens'        => TokenAuth::class,
         'superadmin'    => \App\Filters\SuperAdminFilter::class,
         'propertyadmin' => \App\Filters\PropertyAdminFilter::class,
+        'propertyowner' => \App\Filters\PropertyOwnerFilter::class,
         'throttle'      => \App\Filters\ThrottleFilter::class,
     ];
 

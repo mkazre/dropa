@@ -18,13 +18,21 @@ class ParcelModel extends Model
     ];
     protected $returnType    = 'array';
 
-    /** Parcels visible to a household (shared unit), newest first, with who reserved each one. */
+    /**
+     * Parcels visible to a household (shared unit) — plus anything a
+     * household member sent to someone else (peer-to-peer). Newest first,
+     * tagged with who it's for and who arranged it.
+     */
     public function forHousehold(array $tenantIds): array
     {
-        return $this->select('parcels.*, users.full_name AS reserved_by')
+        return $this->select('parcels.*, users.full_name AS reserved_by, senders.full_name AS sent_by')
             ->join('reservations', 'reservations.id = parcels.reservation_id')
             ->join('users', 'users.id = reservations.tenant_id')
-            ->whereIn('reservations.tenant_id', $tenantIds)
+            ->join('users AS senders', 'senders.id = reservations.created_by', 'left')
+            ->groupStart()
+                ->whereIn('reservations.tenant_id', $tenantIds)
+                ->orWhereIn('reservations.created_by', $tenantIds)
+            ->groupEnd()
             ->orderBy('parcels.id', 'DESC')
             ->findAll();
     }

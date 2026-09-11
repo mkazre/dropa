@@ -19,6 +19,7 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
 
         $routes->get('me', 'AccountController::me');
         $routes->get('properties/mine', 'PropertiesController::mine');
+        $routes->get('properties/mine/residents', 'PropertiesController::residents');
         $routes->get('lockers/availability', 'PropertiesController::lockerAvailability');
         $routes->post('reservations', 'ReservationsController::create');
         $routes->get('reservations/mine', 'ReservationsController::mine');
@@ -79,29 +80,37 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'su
 // Body Corporate Admin panel — one property.
 // ---------------------------------------------------------------------
 $routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => 'propertyadmin'], static function ($routes) {
+    // Staff (kiosk-assist) can reach these — helping a resident find a
+    // parcel's status or logging a fault doesn't require owner-level access.
     $routes->get('/', 'DashboardController::index');
-
-    $routes->get('tenants', 'TenantsController::index');
-    $routes->get('tenants/new', 'TenantsController::new');
-    $routes->post('tenants', 'TenantsController::create');
-    $routes->post('tenants/(:num)/delete', 'TenantsController::delete/$1');
-    $routes->get('tenants/import', 'TenantsController::importForm');
-    $routes->post('tenants/import', 'TenantsController::import');
-
     $routes->get('parcels', 'ParcelsController::index');
-
-    $routes->get('payments', 'PaymentsController::index');
-    $routes->post('payments/(:num)/approve', 'PaymentsController::approve/$1');
-
-    $routes->get('gateways', 'GatewaySettingsController::index');
-    $routes->post('gateways', 'GatewaySettingsController::update');
-
-    $routes->get('pricing', 'PricingController::index');
-    $routes->post('pricing', 'PricingController::update');
-
     $routes->get('maintenance', 'MaintenanceController::index');
     $routes->post('maintenance/(:num)/status', 'MaintenanceController::updateStatus/$1');
 
-    $routes->get('branding', 'BrandingController::edit');
-    $routes->post('branding', 'BrandingController::update');
+    // Everything else — people, money, settings — is Body Corporate only.
+    $routes->group('', ['filter' => 'propertyowner'], static function ($routes) {
+        $routes->get('tenants', 'TenantsController::index');
+        $routes->get('tenants/new', 'TenantsController::new');
+        $routes->post('tenants', 'TenantsController::create');
+        $routes->post('tenants/(:num)/delete', 'TenantsController::delete/$1');
+        $routes->get('tenants/import', 'TenantsController::importForm');
+        $routes->post('tenants/import', 'TenantsController::import');
+
+        $routes->get('staff', 'StaffController::index');
+        $routes->get('staff/new', 'StaffController::new');
+        $routes->post('staff', 'StaffController::create');
+        $routes->post('staff/(:num)/delete', 'StaffController::delete/$1');
+
+        $routes->get('payments', 'PaymentsController::index');
+        $routes->post('payments/(:num)/approve', 'PaymentsController::approve/$1');
+
+        $routes->get('gateways', 'GatewaySettingsController::index');
+        $routes->post('gateways', 'GatewaySettingsController::update');
+
+        $routes->get('pricing', 'PricingController::index');
+        $routes->post('pricing', 'PricingController::update');
+
+        $routes->get('branding', 'BrandingController::edit');
+        $routes->post('branding', 'BrandingController::update');
+    });
 });

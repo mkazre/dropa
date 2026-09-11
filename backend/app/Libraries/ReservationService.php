@@ -47,8 +47,15 @@ class ReservationService
     /**
      * Tenant taps "Expecting a parcel": find an available locker of the
      * requested size at the tenant's property and hold it.
+     *
+     * When $recipientTenantId differs from $tenantId, this is a
+     * peer-to-peer send — $recipientTenantId is who collects and gets
+     * notified, $tenantId (passed as $recipientTenantId's household won't
+     * see it any differently) is recorded as `created_by` so the sender can
+     * still track it. Both must belong to the same property; the caller is
+     * responsible for that check.
      */
-    public function reserve(int $propertyId, int $tenantId, string $size): array
+    public function reserve(int $propertyId, int $tenantId, string $size, ?int $recipientTenantId = null): array
     {
         $rack = $this->racks->where('property_id', $propertyId)
             ->where('status', 'online')
@@ -68,10 +75,12 @@ class ReservationService
 
         $property     = $this->properties->find($propertyId);
         $holdHours    = (int) ($property['reservation_hold_hours'] ?? 48);
+        $recipientId  = $recipientTenantId ?? $tenantId;
 
         $reservationId = $this->reservations->insert([
             'property_id'    => $propertyId,
-            'tenant_id'      => $tenantId,
+            'tenant_id'      => $recipientId,
+            'created_by'     => $recipientId === $tenantId ? null : $tenantId,
             'locker_id'      => (int) $externalId,
             'size_requested' => $size,
             'deposit_code'   => $depositCode,

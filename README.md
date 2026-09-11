@@ -71,6 +71,17 @@ testing without going through the login flow.
   Any housemate can also mint a delegate code for a household parcel. Write actions that aren't purely about
   visibility (cancelling a reservation) stay restricted to whoever actually created it. `/api/v1/me` also
   returns `household`: the other tenants' names on the same unit.
+- Peer-to-peer send: a resident can reserve a locker *for a neighbour* (`recipient_unit_number` on
+  `POST /api/v1/reservations`, resolved via `GET /api/v1/properties/mine/residents?q=`) instead of themselves —
+  `reservations.tenant_id` becomes the recipient (so all existing notify/collect logic just works unmodified)
+  and `created_by` records who arranged it. Since the sender is physically on-site, they deposit it themselves
+  right after reserving via the same public `/api/v1/parcels/deposit` the courier flow uses — no code ever
+  needs to be shared. Both sender and recipient see the item in their own `/mine` lists, tagged `reserved_by`
+  and `sent_by` respectively; the sender can also cancel it before it's deposited.
+- Staff accounts: on-site concierge/security (`/manage/staff`, Body Corporate only) get the `staff` group,
+  scoped to the property like a tenant but with no unit. `PropertyOwnerFilter` restricts tenants/staff/payments/
+  gateways/pricing/branding to `property_admin`/`superadmin` — staff only reach the dashboard, parcels view and
+  maintenance triage (`PropertyAdminFilter`, which still allows staff through to those).
 
 ### Notifications
 
@@ -114,11 +125,14 @@ First launch: onboarding (how reserving, sharing a code, and collecting works) �
 Sign in with any of the demo accounts above (e.g. `tenant@dropa.app` / `DropaTenant123!`).
 
 - **Home** — property/unit auto-detected on login, quick actions, parcels awaiting collection
-- **Reserve** — pick a size (live per-size availability), get a deposit code to share (native share sheet /
-  copy), pay if the property charges a booking fee (opens Ozow/PayFast in the browser, or shows manual
-  instructions with a photo-library proof-of-payment upload)
-- **Parcels** — household-wide history (housemates' parcels show "· for {name}"); tap an active one for its
-  PIN + a real scannable QR code (`react-native-qrcode-svg`), or to generate and share a delegate collection code
+- **Reserve** — for yourself, or search-and-pick a neighbour to send to instead; pick a size (live per-size
+  availability). For yourself: get a deposit code to share (native share sheet/copy) and pay if the property
+  charges a booking fee (opens Ozow/PayFast in the browser, or shows manual instructions with a photo-library
+  proof-of-payment upload). Sending to a neighbour: no code to share — tap "I've dropped it off" right in the
+  app once you've placed it in the locker
+- **Parcels** — household-wide history, attributed as "· for {name}" (a housemate's item) or "· sent to {name}"
+  (something you arranged for someone else); tap an active one for its PIN + a real scannable QR code
+  (`react-native-qrcode-svg`), or to generate and share a delegate collection code
 - **Collect** — PIN keypad or QR camera scan (`expo-camera`), either resolves through the same API endpoint
 - **Profile** — account details, who else shares your unit, a large-text mode toggle (bigger PINs/codes/keypad
   at the locker — `src/context/AccessibilityContext.tsx`), change password, log out

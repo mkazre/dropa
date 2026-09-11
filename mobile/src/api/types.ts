@@ -41,14 +41,23 @@ export type Reservation = {
   id: number;
   property_id: number;
   tenant_id: number;
+  created_by: number | null;
   locker_id: number | null;
   size_requested: LockerSize;
   deposit_code: string;
   status: 'pending' | 'held' | 'deposited' | 'expired' | 'cancelled';
   expires_at: string;
   created_at: string;
-  /** Which housemate reserved this — present on /reservations/mine (household-wide). */
+  /** Who this reservation is for — present on /reservations/mine (household-wide). */
   reserved_by?: string;
+  /** Set when someone sent this to another resident (peer-to-peer) — who arranged it. */
+  sent_by?: string | null;
+};
+
+export type Resident = {
+  id: number;
+  full_name: string | null;
+  unit_number: string;
 };
 
 export type Parcel = {
@@ -63,8 +72,9 @@ export type Parcel = {
   deposited_at: string | null;
   collected_at: string | null;
   status: 'awaiting_deposit' | 'awaiting_collection' | 'collected';
-  /** Which housemate reserved this — present on /parcels/mine (household-wide). */
+  /** Who this parcel is for — present on /parcels/mine (household-wide). */
   reserved_by?: string;
+  sent_by?: string | null;
 };
 
 export type PaymentMethod = {

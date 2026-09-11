@@ -9,15 +9,23 @@ use App\Libraries\ReservationService;
 use App\Models\LockerModel;
 use App\Models\LockerRackModel;
 use App\Models\ReservationModel;
+use App\Models\UnitModel;
+use CodeIgniter\Shield\Models\UserModel;
 use RuntimeException;
 
 class ReservationsController extends BaseApiController
 {
-    /** Tenant taps "Expecting a parcel" and picks a size. */
+    /**
+     * Tenant taps "Expecting a parcel" and picks a size — or, for a
+     * peer-to-peer send, names a neighbour's unit to reserve it for them
+     * instead (the sender is dropping it off in person, so no deposit code
+     * needs to change hands).
+     */
     public function create()
     {
-        $user = $this->currentUser();
-        $size = $this->request->getJsonVar('size');
+        $user               = $this->currentUser();
+        $size               = $this->request->getJsonVar('size');
+        $recipientUnitNumber = $this->request->getJsonVar('recipient_unit_number');
 
         if (empty($user->property_id)) {
             return $this->failForbidden('Your account is not linked to a property yet.');
@@ -26,8 +34,19 @@ class ReservationsController extends BaseApiController
             return $this->failValidationErrors('size must be one of S, M, L, XL.');
         }
 
+        $recipientId = null;
+        if (! empty($recipientUnitNumber)) {
+            $unit = model(UnitModel::class)->where('property_id', $user->property_id)->where('unit_number', $recipientUnitNumber)->first();
+            $recipient = $unit ? (new UserModel())->where('unit_id', $unit['id'])->first() : null;
+
+            if ($recipient === null) {
+                return $this->fail("No resident found for unit {$recipientUnitNumber}.");
+            }
+            $recipientId = (int) $recipient->id;
+        }
+
         try {
-            $reservation = (new ReservationService())->reserve((int) $user->property_id, (int) $user->id, $size);
+            $reservation = (new ReservationService())->reserve((int) $user->property_id, (int) $user->id, $size, $recipientId);
         } catch (RuntimeException $e) {
             return $this->fail($e->getMessage());
         }
@@ -47,7 +66,11 @@ class ReservationsController extends BaseApiController
         $reservations = model(ReservationModel::class);
         $reservation = $reservations->find($id);
 
-        if ($reservation === null || (int) $reservation['tenant_id'] !== (int) $user->id) {
+        $isOwner = $reservation !== null && (
+            (int) $reservation['tenant_id'] === (int) $user->id
+            || (int) ($reservation['created_by'] ?? 0) === (int) $user->id
+        );
+        if (! $isOwner) {
             return $this->failNotFound();
         }
         if ($reservation['status'] !== 'held') {

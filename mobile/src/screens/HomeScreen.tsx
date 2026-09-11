@@ -7,6 +7,7 @@ import Svg, { Path, Rect } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { ParcelsApi } from '../api';
 import type { Parcel } from '../api/types';
+import { attributionSuffix } from '../utils/attribution';
 import { colors, radius } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
 
@@ -83,7 +84,7 @@ export default function HomeScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.parcelTitle}>From {p.sender_name ?? 'a courier'}</Text>
                 <Text style={styles.parcelSub}>
-                  Pickup PIN {p.pickup_pin}{p.reserved_by && p.reserved_by !== me?.name ? ` · for ${p.reserved_by}` : ''}
+                  Pickup PIN {p.pickup_pin}{attributionSuffix(me?.name, p.reserved_by, p.sent_by)}
                 </Text>
               </View>
               <Text style={styles.parcelStatus}>Awaiting{'\n'}collection</Text>

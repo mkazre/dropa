@@ -7,6 +7,7 @@ import type {
   PaymentInitiateResult,
   PaymentQuote,
   Reservation,
+  Resident,
 } from './types';
 
 export const AuthApi = {
@@ -26,10 +27,15 @@ export const AccountApi = {
 export const PropertiesApi = {
   mine: () => apiRequest('/properties/mine'),
   availability: () => apiRequest<LockerAvailability>('/lockers/availability'),
+  residents: (q: string) => apiRequest<Resident[]>(`/properties/mine/residents?q=${encodeURIComponent(q)}`),
 };
 
 export const ReservationsApi = {
-  create: (size: LockerSize) => apiRequest<Reservation>('/reservations', { method: 'POST', body: { size } }),
+  create: (size: LockerSize, recipientUnitNumber?: string) =>
+    apiRequest<Reservation>('/reservations', {
+      method: 'POST',
+      body: { size, recipient_unit_number: recipientUnitNumber || undefined },
+    }),
   mine: () => apiRequest<Reservation[]>('/reservations/mine'),
   cancel: (id: number) => apiRequest<void>(`/reservations/${id}/cancel`, { method: 'POST' }),
   paymentOptions: (id: number) => apiRequest<PaymentQuote>(`/reservations/${id}/payment-options`),
@@ -51,6 +57,9 @@ export const ParcelsApi = {
   mine: () => apiRequest<Parcel[]>('/parcels/mine'),
   collect: (code: string) => apiRequest<Parcel>('/parcels/collect', { method: 'POST', body: { code }, auth: false }),
   createDelegateCode: (parcelId: number) => apiRequest<Parcel>(`/parcels/${parcelId}/delegate`, { method: 'POST' }),
+  /** Peer-to-peer send: the sender is dropping it off in person, so they deposit their own reservation right in the app. */
+  deposit: (depositCode: string, senderName: string) =>
+    apiRequest<Parcel>('/parcels/deposit', { method: 'POST', body: { deposit_code: depositCode, sender_name: senderName }, auth: false }),
 };
 
 export type MaintenanceTicket = {

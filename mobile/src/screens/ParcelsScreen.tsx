@@ -7,6 +7,7 @@ import { ParcelsApi } from '../api';
 import type { Parcel } from '../api/types';
 import { EmptyState } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { attributionSuffix } from '../utils/attribution';
 import { colors } from '../theme/tokens';
 import type { AppStackParamList } from '../navigation/types';
 
@@ -53,7 +54,7 @@ export default function ParcelsScreen() {
               <Text style={styles.title}>From {item.sender_name ?? 'a courier'}</Text>
               <Text style={styles.sub}>
                 {item.deposited_at ? new Date(item.deposited_at).toLocaleDateString() : 'Not deposited yet'}
-                {item.reserved_by && item.reserved_by !== me?.name ? ` · for ${item.reserved_by}` : ''}
+                {attributionSuffix(me?.name, item.reserved_by, item.sent_by)}
               </Text>
             </View>
             <Text style={[styles.status, item.status === 'collected' && styles.statusOk]}>{statusLabel[item.status]}</Text>
