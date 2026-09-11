@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Dropa",
+    "slug": "dropa",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "dropa",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#211E17",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.dropa.mobile"
+    },
+    "android": {
+      "package": "app.dropa.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#211E17",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#211E17"
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Dropa uses the camera to scan a locker's collection QR code."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-foreground.png",
+          "color": "#FFC400"
+        }
+      ]
+    ]
+  }
+}

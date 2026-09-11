@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #211E17;
+  --ink-soft: #4A4638;
+  --paper: #FFFFFF;
+  --signal: #FFC400;
+  --signal-deep: #E0A500;
+  --line: #E7E4DB;
+  --line-strong: #D8D3C6;
+  --ok: #1F8A5B;
+  --ok-soft: #E6F4EC;
+  --alert: #D64545;
+  --muted: #8C887C;
+  --cream: #FCFBF7;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-signal: var(--signal);
+  --color-signal-deep: var(--signal-deep);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-alert: var(--alert);
+  --color-muted: var(--muted);
+  --color-cream: var(--cream);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}

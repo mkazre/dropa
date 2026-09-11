@@ -1,0 +1,37 @@
+# Backend (CodeIgniter)
+backend/vendor/
+backend/writable/cache/*
+backend/writable/logs/*
+backend/writable/session/*
+backend/writable/uploads/*
+backend/writable/debugbar/*
+backend/.env
+backend/*.db
+backend/writable/*.db
+backend/builds/
+
+# Editor/tooling artifacts dropped in by scaffolding tools
+**/.claude/
+
+# Mobile (Expo / React Native)
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.key
+mobile/*.mobileprovision
+
+# Web (Next.js)
+web/node_modules/
+web/.next/
+web/out/
+web/build/
+
+# General
+.DS_Store
+*.log
+.idea/
+.vscode/

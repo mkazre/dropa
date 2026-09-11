@@ -1,0 +1,10 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="0" fill="#211E17"/>
+  <g transform="translate(512 512)">
+    <rect x="-260" y="-260" width="520" height="520" rx="90" fill="#FFC400"/>
+    <!-- locker door glyph -->
+    <rect x="-150" y="-150" width="300" height="300" rx="28" fill="none" stroke="#241f00" stroke-width="26"/>
+    <line x1="-150" y1="-40" x2="150" y2="-40" stroke="#241f00" stroke-width="22"/>
+    <circle cx="105" cy="70" r="16" fill="#241f00"/>
+  </g>
+</svg>
