@@ -14,7 +14,7 @@ class ParcelModel extends Model
     protected $allowedFields = [
         'reservation_id', 'sender_name', 'sender_contact', 'pickup_pin',
         'qr_token', 'delegate_code', 'photo_url', 'deposited_at',
-        'collected_at', 'status',
+        'collected_at', 'reminded_at', 'status',
     ];
     protected $returnType    = 'array';
 }

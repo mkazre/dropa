@@ -20,10 +20,19 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
         $routes->post('reservations/(:num)/cancel', 'ReservationsController::cancel/$1');
         $routes->post('parcels/collect', 'ParcelsController::collect');
         $routes->get('parcels/mine', 'ParcelsController::mine');
+
+        $routes->post('me/push-token', 'AccountController::registerPushToken');
+
+        $routes->get('reservations/(:num)/payment-options', 'PaymentsController::options/$1');
+        $routes->post('payments', 'PaymentsController::initiate');
+        $routes->post('payments/(:num)/proof', 'PaymentsController::uploadProof/$1');
     });
 
     // No login required: a courier only ever has a deposit code.
     $routes->post('parcels/deposit', 'ParcelsController::deposit');
+
+    // Browser landing page after an Ozow/PayFast hosted-page redirect.
+    $routes->get('payments/return', 'PaymentsController::returnPage');
 
     // Inbound hardware/payment provider callbacks.
     $routes->post('webhooks/hivebox', 'WebhooksController::hivebox');
@@ -60,4 +69,10 @@ $routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => '
     $routes->post('tenants/(:num)/delete', 'TenantsController::delete/$1');
 
     $routes->get('parcels', 'ParcelsController::index');
+
+    $routes->get('payments', 'PaymentsController::index');
+    $routes->post('payments/(:num)/approve', 'PaymentsController::approve/$1');
+
+    $routes->get('gateways', 'GatewaySettingsController::index');
+    $routes->post('gateways', 'GatewaySettingsController::update');
 });

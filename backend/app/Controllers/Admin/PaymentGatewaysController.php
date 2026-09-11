@@ -16,8 +16,10 @@ class PaymentGatewaysController extends BaseController
         $settings = model(PaymentGatewaySettingModel::class);
         $rows     = [];
         foreach (self::GATEWAYS as $gateway) {
-            $rows[$gateway] = $settings->where('scope', 'global')->where('gateway', $gateway)->first()
-                ?? ['gateway' => $gateway, 'enabled' => 0, 'instructions' => ''];
+            $row = $settings->where('scope', 'global')->where('gateway', $gateway)->first()
+                ?? ['gateway' => $gateway, 'enabled' => 0, 'instructions' => '', 'credentials' => null];
+            $row['credentials'] = json_decode($row['credentials'] ?? '{}', true) ?: [];
+            $rows[$gateway]     = $row;
         }
 
         return view('admin/gateways/index', [
@@ -33,6 +35,21 @@ class PaymentGatewaysController extends BaseController
         $settings = model(PaymentGatewaySettingModel::class);
         $enabled  = $this->request->getPost('enabled') ?? [];
 
+        $credentials = [
+            'ozow' => [
+                'site_code'   => $this->request->getPost('ozow_site_code'),
+                'private_key' => $this->request->getPost('ozow_private_key'),
+                'is_test'     => $this->request->getPost('ozow_is_test') ? 'true' : 'false',
+            ],
+            'payfast' => [
+                'merchant_id'  => $this->request->getPost('payfast_merchant_id'),
+                'merchant_key' => $this->request->getPost('payfast_merchant_key'),
+                'passphrase'   => $this->request->getPost('payfast_passphrase'),
+                'sandbox'      => $this->request->getPost('payfast_sandbox') ? 'true' : 'false',
+            ],
+            'manual' => [],
+        ];
+
         foreach (self::GATEWAYS as $gateway) {
             $existing = $settings->where('scope', 'global')->where('gateway', $gateway)->first();
             $data     = [
@@ -40,6 +57,7 @@ class PaymentGatewaysController extends BaseController
                 'gateway'      => $gateway,
                 'enabled'      => in_array($gateway, $enabled, true) ? 1 : 0,
                 'instructions' => $gateway === 'manual' ? $this->request->getPost('manual_instructions') : null,
+                'credentials'  => json_encode($credentials[$gateway]),
             ];
 
             if ($existing) {

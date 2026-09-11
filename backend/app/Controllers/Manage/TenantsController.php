@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controllers\Manage;
 
 use App\Controllers\BaseController;
+use App\Libraries\Notifications\NotificationService;
+use App\Models\PropertyModel;
 use App\Models\UnitModel;
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\Shield\Models\UserModel;
@@ -76,9 +78,15 @@ class TenantsController extends BaseController
             'phone'       => $phone,
         ]);
 
-        // TODO: send $email an invite (magic link or temp password) via the
-        // Notifications module rather than surfacing it in session flash.
-        return redirect()->to('/manage/tenants')->with('success', "Tenant invited for unit {$unitNumber}. Temporary password: {$tempPassword}");
+        $property = model(PropertyModel::class)->find($propertyId);
+        (new NotificationService())->notify(
+            ['id' => $user->id, 'email' => $email, 'phone' => $phone, 'push_token' => null],
+            "You've been invited to Dropa",
+            "{$property['name']} has set you up on Dropa for unit {$unitNumber}. Sign in with {$email} and this temporary password: {$tempPassword} — you'll be asked to change it.",
+            ['email'],
+        );
+
+        return redirect()->to('/manage/tenants')->with('success', "Tenant invited for unit {$unitNumber}. Temporary password (also emailed): {$tempPassword}");
     }
 
     public function delete($id)

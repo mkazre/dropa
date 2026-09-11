@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Libraries;
 
 use App\Libraries\Hardware\HardwareProviderFactory;
+use App\Libraries\Notifications\NotificationService;
 use App\Models\LockerModel;
 use App\Models\LockerRackModel;
 use App\Models\ParcelModel;
 use App\Models\PropertyModel;
 use App\Models\ReservationModel;
+use CodeIgniter\Shield\Models\UserModel;
 use RuntimeException;
 
 /**
@@ -25,7 +27,21 @@ class ReservationService
         private LockerModel $lockers = new LockerModel(),
         private LockerRackModel $racks = new LockerRackModel(),
         private PropertyModel $properties = new PropertyModel(),
+        private NotificationService $notifications = new NotificationService(),
     ) {
+    }
+
+    /** A plain array of the fields NotificationService needs, for a given user id. */
+    private function notifiableUser(int $userId): array
+    {
+        $user = (new UserModel())->findById($userId);
+
+        return [
+            'id'         => $userId,
+            'email'      => $user?->email,
+            'phone'      => $user?->phone,
+            'push_token' => $user?->push_token,
+        ];
     }
 
     /**
@@ -100,6 +116,12 @@ class ReservationService
             'status'         => 'awaiting_collection',
         ], true);
 
+        $this->notifications->notify(
+            $this->notifiableUser((int) $reservation['tenant_id']),
+            'Your parcel has arrived',
+            "It's waiting for you at Locker {$locker['label']}. Your pickup PIN is {$pickupPin} — collect any time with the PIN, a QR scan, or from the app.",
+        );
+
         return $this->parcels->find($parcelId);
     }
 
@@ -132,6 +154,13 @@ class ReservationService
             'collected_at' => date('Y-m-d H:i:s'),
         ]);
         $this->lockers->update($locker['id'], ['status' => 'available']);
+
+        $this->notifications->notify(
+            $this->notifiableUser((int) $reservation['tenant_id']),
+            'Parcel collected',
+            "Locker {$locker['label']} is now free for the next delivery. Thanks for using Dropa.",
+            ['push'],
+        );
 
         return $this->parcels->find($parcel['id']);
     }

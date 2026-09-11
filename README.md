@@ -46,8 +46,27 @@ Panels: `/admin` (Super Admin), `/manage` (Body Corporate Admin). API: `/api/v1/
 - Lockers belong to a `locker_rack`, each rack has a `hardware_provider`: `mock` (pure-software simulation,
   used everywhere until real hardware is installed) or `hivebox` (stubbed adapter for Hive-Box smart parcel
   lockers — see `app/Libraries/Hardware/HiveBoxHardwareProvider.php`, pending their developer API access).
-- Payment gateways (`app/Libraries/Payments/`) are pluggable per the same pattern: Ozow, PayFast, and a Manual
-  offline option, each independently toggleable globally (`/admin/gateways`) or per property.
+- Payment gateways (`app/Libraries/Payments/`) are fully implemented for Ozow (hosted EFT page, HashCheck
+  signing/verification) and PayFast (hosted card page, MD5 signature), plus a Manual/offline option with a
+  proof-of-payment upload and a Body Corporate Admin approval screen (`/manage/payments`). Each gateway is
+  independently toggleable globally (`/admin/gateways`, where Super Admin also sets merchant credentials) or
+  per property (`/manage/gateways`, enable/disable + manual instructions only — credentials stay platform-wide).
+  A reservation's cost comes from `pricing_rules` (per property, falling back to the platform default).
+
+### Notifications
+
+`app/Libraries/Notifications/` — a `NotificationService` fans out to push (Expo push API), email (CI4's
+built-in SMTP service), and SMS (BulkSMS) channels, logging every attempt to `notifications_log` regardless of
+whether it actually reached the user (best-effort: a missing SMS/SMTP credential never blocks the underlying
+reservation/parcel action). Wired into: parcel deposited (pickup PIN to the tenant), parcel collected, and
+tenant invites. Configure real credentials in `.env` (see the `EMAIL`/`SMS` sections in `env`) — without them,
+everything still works end-to-end, just with notifications logged as `failed`.
+
+Two scheduled jobs (run via cron / Windows Task Scheduler):
+```
+php spark reservations:expire   # releases lockers whose hold window passed without a deposit
+php spark parcels:remind        # reminds a tenant (at most once/day) about an uncollected parcel
+```
 
 ## Mobile (`/mobile`)
 

@@ -67,3 +67,29 @@
 #--------------------------------------------------------------------
 
 # logger.threshold = 4
+
+#--------------------------------------------------------------------
+# EMAIL (tenant invites, parcel notifications)
+#--------------------------------------------------------------------
+
+# email.protocol = smtp
+# email.SMTPHost =
+# email.SMTPUser =
+# email.SMTPPass =
+# email.SMTPPort = 587
+# email.fromEmail = no-reply@dropa.app
+# email.fromName = Dropa
+
+#--------------------------------------------------------------------
+# SMS (BulkSMS — app/Libraries/Notifications/SmsChannel.php)
+#--------------------------------------------------------------------
+
+# sms.username =
+# sms.password =
+
+#--------------------------------------------------------------------
+# HIVE-BOX (app/Libraries/Hardware/HiveBoxHardwareProvider.php)
+#--------------------------------------------------------------------
+
+# hivebox.baseUrl =
+# hivebox.apiKey =

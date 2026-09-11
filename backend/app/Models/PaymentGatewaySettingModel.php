@@ -31,6 +31,11 @@ class PaymentGatewaySettingModel extends Model
         if ($propertyId !== null) {
             $overrides = $this->where('scope', 'property')->where('property_id', $propertyId)->findAll();
             foreach ($overrides as $row) {
+                // A property only ever toggles enabled/instructions for a gateway — the
+                // merchant credentials themselves stay whatever the Super Admin set globally.
+                if (empty($row['credentials']) && isset($result[$row['gateway']])) {
+                    $row['credentials'] = $result[$row['gateway']]['credentials'];
+                }
                 $result[$row['gateway']] = $row;
             }
         }

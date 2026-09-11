@@ -6,6 +6,8 @@ namespace App\Database\Seeds;
 
 use App\Models\LockerModel;
 use App\Models\LockerRackModel;
+use App\Models\PaymentGatewaySettingModel;
+use App\Models\PricingRuleModel;
 use App\Models\PropertyModel;
 use App\Models\UnitModel;
 use CodeIgniter\Database\Seeder;
@@ -88,6 +90,29 @@ class DemoSeeder extends Seeder
                 'property_id' => $propertyId, 'unit_id' => $unitId,
                 'full_name' => 'Lindiwe Mokoena', 'phone' => '082 555 0147',
             ]);
+        }
+
+        // -- Pricing: a flat platform-default booking fee per size --------
+        $pricing = model(PricingRuleModel::class);
+        foreach (['S' => 35, 'M' => 55, 'L' => 85, 'XL' => 120] as $size => $rate) {
+            if ($pricing->where('property_id', null)->where('size', $size)->first() === null) {
+                $pricing->insert(['property_id' => null, 'size' => $size, 'free_hours' => 48, 'daily_rate' => $rate]);
+            }
+        }
+
+        // -- Payments: manual/offline enabled by default so the flow is demoable without gateway credentials --
+        $gatewaySettings = model(PaymentGatewaySettingModel::class);
+        if ($gatewaySettings->where('scope', 'global')->where('gateway', 'manual')->first() === null) {
+            $gatewaySettings->insert([
+                'scope' => 'global', 'gateway' => 'manual', 'enabled' => 1,
+                'instructions' => 'Pay by EFT to Dropa (Pty) Ltd, account 123456789, branch code 250655, using your reservation number as reference — then upload your proof of payment.',
+                'credentials' => '{}',
+            ]);
+        }
+        foreach (['ozow', 'payfast'] as $gateway) {
+            if ($gatewaySettings->where('scope', 'global')->where('gateway', $gateway)->first() === null) {
+                $gatewaySettings->insert(['scope' => 'global', 'gateway' => $gateway, 'enabled' => 0, 'credentials' => '{}']);
+            }
         }
     }
 }

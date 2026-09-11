@@ -27,4 +27,17 @@ class AccountController extends BaseApiController
             'unit'     => $unit,
         ]);
     }
+
+    /** The RN app calls this once it has an Expo push token, so deposit/collect notifications can reach it. */
+    public function registerPushToken()
+    {
+        $token = $this->request->getJsonVar('push_token');
+        if (empty($token)) {
+            return $this->failValidationErrors('push_token is required.');
+        }
+
+        db_connect()->table('users')->where('id', $this->currentUser()->id)->update(['push_token' => $token]);
+
+        return $this->respondNoContent();
+    }
 }
