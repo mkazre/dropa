@@ -5,12 +5,30 @@ import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OnboardingScreen from './src/screens/OnboardingScreen';
-import WelcomeScreen from './src/screens/WelcomeScreen';
+import RootNavigator from './src/navigation/RootNavigator';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { colors } from './src/theme/tokens';
 
 const ONBOARDING_SEEN_KEY = 'dropa.onboardingSeen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+function Gate({ showOnboarding, onDoneOnboarding }: { showOnboarding: boolean; onDoneOnboarding: () => void }) {
+  const { booting } = useAuth();
+
+  const onLayout = useCallback(() => {
+    if (!booting) SplashScreen.hideAsync().catch(() => {});
+  }, [booting]);
+
+  if (booting) return <View style={{ flex: 1, backgroundColor: colors.ink }} onLayout={onLayout} />;
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.paper }} onLayout={onLayout}>
+      {showOnboarding ? <OnboardingScreen onDone={onDoneOnboarding} /> : <RootNavigator />}
+      <StatusBar style="dark" />
+    </View>
+  );
+}
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -23,10 +41,6 @@ export default function App() {
       .finally(() => setReady(true));
   }, []);
 
-  const onLayout = useCallback(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
-
   const finishOnboarding = () => {
     AsyncStorage.setItem(ONBOARDING_SEEN_KEY, 'true').catch(() => {});
     setShowOnboarding(false);
@@ -36,10 +50,9 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1, backgroundColor: colors.paper }} onLayout={onLayout}>
-        {showOnboarding ? <OnboardingScreen onDone={finishOnboarding} /> : <WelcomeScreen />}
-        <StatusBar style="dark" />
-      </View>
+      <AuthProvider>
+        <Gate showOnboarding={showOnboarding} onDoneOnboarding={finishOnboarding} />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

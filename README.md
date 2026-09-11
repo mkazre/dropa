@@ -38,8 +38,9 @@ Demo logins (from `DemoSeeder`):
 | Body Corporate Admin | `bodycorp@dropa.app` | `DropaAdmin123!` |
 | Tenant | `tenant@dropa.app` | `DropaTenant123!` |
 
-Panels: `/admin` (Super Admin), `/manage` (Body Corporate Admin). API: `/api/v1/*`, token-authenticated
-(`php spark make:apitoken <email>` mints a personal access token for local testing).
+Panels: `/admin` (Super Admin), `/manage` (Body Corporate Admin). API: `/api/v1/*`, token-authenticated via
+`POST /api/v1/auth/login` (email/password → access token) — or `php spark make:apitoken <email>` for local
+testing without going through the login flow.
 
 ### Hardware & payments
 
@@ -70,9 +71,26 @@ php spark parcels:remind        # reminds a tenant (at most once/day) about an u
 
 ## Mobile (`/mobile`)
 
-Expo-managed React Native app. `npm install && npx expo start`. First launch shows onboarding (how reserving,
-sharing a code, and collecting works), then a splash screen and welcome screen carrying the Dropa brand mark
-(`assets/brand/*.svg`, rasterized via `node scripts/build-brand-assets.js`).
+Expo-managed React Native app, fully wired to the live API. `npm install`, copy `.env.example` to `.env` (point
+`EXPO_PUBLIC_API_URL` at your backend — use your machine's LAN IP, not `localhost`, when testing on a physical
+device), then `npx expo start`.
+
+First launch: onboarding (how reserving, sharing a code, and collecting works) → splash screen → welcome/login.
+Sign in with any of the demo accounts above (e.g. `tenant@dropa.app` / `DropaTenant123!`).
+
+- **Home** — property/unit auto-detected on login, quick actions, parcels awaiting collection
+- **Reserve** — pick a size (live per-size availability), get a deposit code to share (native share sheet /
+  copy), pay if the property charges a booking fee (opens Ozow/PayFast in the browser, or shows manual
+  instructions with a photo-library proof-of-payment upload)
+- **Parcels** — full history; tap an active one for its PIN + a real scannable QR code
+  (`react-native-qrcode-svg`)
+- **Collect** — PIN keypad or QR camera scan (`expo-camera`), either resolves through the same API endpoint
+- **Profile** — account details, change password, log out
+- Push notifications: registers the device's Expo push token with the backend on login
+  (`app/Libraries/Notifications/PushChannel.php` sends to it)
+
+Auth token lives in `expo-secure-store`; design tokens ported from the prototype live in `src/theme/tokens.ts`;
+the app icon/splash brand mark is in `assets/brand/*.svg`, rasterized via `node scripts/build-brand-assets.js`.
 
 ## Web (`/web`)
 

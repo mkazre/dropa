@@ -48,6 +48,12 @@
           "icon": "./assets/android-icon-foreground.png",
           "color": "#FFC400"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Dropa uses your photo library to attach proof of an offline payment."
+        }
       ]
     ]
   }

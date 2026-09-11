@@ -11,7 +11,12 @@ service('auth')->routes($routes);
 // REST API — RN app, website, kiosk. Token-authenticated except where noted.
 // ---------------------------------------------------------------------
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
+    $routes->post('auth/login', 'AuthController::login');
+
     $routes->group('', ['filter' => 'tokens'], static function ($routes) {
+        $routes->post('auth/logout', 'AuthController::logout');
+        $routes->post('auth/change-password', 'AuthController::changePassword');
+
         $routes->get('me', 'AccountController::me');
         $routes->get('properties/mine', 'PropertiesController::mine');
         $routes->get('lockers/availability', 'PropertiesController::lockerAvailability');
