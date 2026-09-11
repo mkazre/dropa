@@ -52,7 +52,19 @@ testing without going through the login flow.
   proof-of-payment upload and a Body Corporate Admin approval screen (`/manage/payments`). Each gateway is
   independently toggleable globally (`/admin/gateways`, where Super Admin also sets merchant credentials) or
   per property (`/manage/gateways`, enable/disable + manual instructions only — credentials stay platform-wide).
-  A reservation's cost comes from `pricing_rules` (per property, falling back to the platform default).
+- Pricing (`pricing_rules`): Super Admin sets the platform default per size (`/admin/pricing`); a Body
+  Corporate can override any size for their own property (`/manage/pricing`) or leave it blank to keep
+  inheriting the default. `PricingRuleModel::forPropertyAndSize()` resolves which one applies.
+
+### Tenant management
+
+- Invite one at a time (`/manage/tenants/new`) or in bulk via CSV (`/manage/tenants/import` — columns
+  `unit_number,full_name,email,phone`; existing emails are skipped, not overwritten).
+- Delegate collection: a tenant can mint a one-time code (`POST /api/v1/parcels/{id}/delegate`) so someone
+  else — a family member, a helper — can collect on their behalf without needing the tenant's own PIN or an
+  account. Collection itself (`POST /api/v1/parcels/collect`) is intentionally public/unauthenticated: knowing
+  the PIN, QR token, or delegate code *is* the authorization, exactly like a physical locker. This is also what
+  lets the website's no-login `/collect` page work.
 
 ### Notifications
 
@@ -83,7 +95,7 @@ Sign in with any of the demo accounts above (e.g. `tenant@dropa.app` / `DropaTen
   copy), pay if the property charges a booking fee (opens Ozow/PayFast in the browser, or shows manual
   instructions with a photo-library proof-of-payment upload)
 - **Parcels** — full history; tap an active one for its PIN + a real scannable QR code
-  (`react-native-qrcode-svg`)
+  (`react-native-qrcode-svg`), or to generate and share a delegate collection code
 - **Collect** — PIN keypad or QR camera scan (`expo-camera`), either resolves through the same API endpoint
 - **Profile** — account details, change password, log out
 - Push notifications: registers the device's Expo push token with the backend on login
@@ -95,4 +107,5 @@ the app icon/splash brand mark is in `assets/brand/*.svg`, rasterized via `node 
 ## Web (`/web`)
 
 Next.js (App Router + Tailwind). `npm install && npm run dev`. Copy `.env.local.example` to `.env.local` to
-point it at the backend API.
+point it at the backend API. Pages: marketing home, `/onboard` (property lead form), `/drop-off` (no-login
+courier deposit), `/collect` (no-login collection — PIN, QR value, or delegate code).

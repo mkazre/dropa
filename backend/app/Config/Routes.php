@@ -23,8 +23,8 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
         $routes->post('reservations', 'ReservationsController::create');
         $routes->get('reservations/mine', 'ReservationsController::mine');
         $routes->post('reservations/(:num)/cancel', 'ReservationsController::cancel/$1');
-        $routes->post('parcels/collect', 'ParcelsController::collect');
         $routes->get('parcels/mine', 'ParcelsController::mine');
+        $routes->post('parcels/(:num)/delegate', 'ParcelsController::createDelegateCode/$1');
 
         $routes->post('me/push-token', 'AccountController::registerPushToken');
 
@@ -33,8 +33,13 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
         $routes->post('payments/(:num)/proof', 'PaymentsController::uploadProof/$1');
     });
 
-    // No login required: a courier only ever has a deposit code.
+    // No login required: a courier only ever has a deposit code, and
+    // collection is authorized by knowledge of the PIN/QR/delegate code
+    // itself (not by being logged in) — this is what lets a family
+    // member/helper collect on a tenant's behalf, or a future kiosk/website
+    // collect flow work without an account.
     $routes->post('parcels/deposit', 'ParcelsController::deposit');
+    $routes->post('parcels/collect', 'ParcelsController::collect');
 
     // Browser landing page after an Ozow/PayFast hosted-page redirect.
     $routes->get('payments/return', 'PaymentsController::returnPage');
@@ -60,6 +65,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'su
 
     $routes->get('gateways', 'PaymentGatewaysController::index');
     $routes->post('gateways', 'PaymentGatewaysController::update');
+
+    $routes->get('pricing', 'PricingController::index');
+    $routes->post('pricing', 'PricingController::update');
 });
 
 // ---------------------------------------------------------------------
@@ -72,6 +80,8 @@ $routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => '
     $routes->get('tenants/new', 'TenantsController::new');
     $routes->post('tenants', 'TenantsController::create');
     $routes->post('tenants/(:num)/delete', 'TenantsController::delete/$1');
+    $routes->get('tenants/import', 'TenantsController::importForm');
+    $routes->post('tenants/import', 'TenantsController::import');
 
     $routes->get('parcels', 'ParcelsController::index');
 
@@ -80,4 +90,7 @@ $routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => '
 
     $routes->get('gateways', 'GatewaySettingsController::index');
     $routes->post('gateways', 'GatewaySettingsController::update');
+
+    $routes->get('pricing', 'PricingController::index');
+    $routes->post('pricing', 'PricingController::update');
 });

@@ -65,4 +65,16 @@ class ParcelsController extends BaseApiController
             model(ParcelModel::class)->whereIn('reservation_id', $reservations)->orderBy('id', 'DESC')->findAll()
         );
     }
+
+    /** Tenant mints a one-time code so someone else can collect on their behalf. */
+    public function createDelegateCode($parcelId)
+    {
+        try {
+            $parcel = (new ReservationService())->generateDelegateCode((int) $parcelId, (int) $this->currentUser()->id);
+        } catch (RuntimeException $e) {
+            return $this->fail($e->getMessage());
+        }
+
+        return $this->respond($parcel);
+    }
 }

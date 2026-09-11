@@ -129,11 +129,12 @@ class ReservationService
      * Tenant collects at the locker (PIN, QR, or in-app unlock): mark the
      * parcel collected and release the locker back to the property's pool.
      */
-    public function collect(string $pinOrQrToken): array
+    public function collect(string $code): array
     {
         $parcel = $this->parcels->groupStart()
-            ->where('pickup_pin', $pinOrQrToken)
-            ->orWhere('qr_token', $pinOrQrToken)
+            ->where('pickup_pin', $code)
+            ->orWhere('qr_token', $code)
+            ->orWhere('delegate_code', $code)
             ->groupEnd()
             ->where('status', 'awaiting_collection')
             ->first();
@@ -163,6 +164,33 @@ class ReservationService
         );
 
         return $this->parcels->find($parcel['id']);
+    }
+
+    /**
+     * Tenant authorizes someone else (family member/helper) to collect on
+     * their behalf: mints a one-time code that works exactly like the PIN
+     * in collect() above, without sharing the tenant's own pickup PIN.
+     */
+    public function generateDelegateCode(int $parcelId, int $tenantId): array
+    {
+        $parcel = $this->parcels->find($parcelId);
+        if ($parcel === null) {
+            throw new RuntimeException('Parcel not found.');
+        }
+
+        $reservation = $this->reservations->find($parcel['reservation_id']);
+        if ($reservation === null || (int) $reservation['tenant_id'] !== $tenantId) {
+            throw new RuntimeException('Parcel not found.');
+        }
+
+        if ($parcel['status'] !== 'awaiting_collection') {
+            throw new RuntimeException('This parcel is not awaiting collection.');
+        }
+
+        $delegateCode = $this->generateCode(6);
+        $this->parcels->update($parcelId, ['delegate_code' => $delegateCode]);
+
+        return $this->parcels->find($parcelId);
     }
 
     private function generateCode(int $length): string

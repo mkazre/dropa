@@ -49,5 +49,6 @@ export const PaymentsApi = {
 
 export const ParcelsApi = {
   mine: () => apiRequest<Parcel[]>('/parcels/mine'),
-  collect: (code: string) => apiRequest<Parcel>('/parcels/collect', { method: 'POST', body: { code } }),
+  collect: (code: string) => apiRequest<Parcel>('/parcels/collect', { method: 'POST', body: { code }, auth: false }),
+  createDelegateCode: (parcelId: number) => apiRequest<Parcel>(`/parcels/${parcelId}/delegate`, { method: 'POST' }),
 };

@@ -10,6 +10,7 @@ export default function Home() {
         </div>
         <nav className="flex items-center gap-6 text-sm font-semibold">
           <Link href="/drop-off" className="hover:text-signal-deep">Drop off a parcel</Link>
+          <Link href="/collect" className="hover:text-signal-deep">Collect a parcel</Link>
           <Link href="/onboard" className="bg-ink text-white px-4 py-2.5 rounded-xl hover:brightness-110">
             Register your property
           </Link>

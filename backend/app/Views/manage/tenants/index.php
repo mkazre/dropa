@@ -3,7 +3,10 @@
 
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-2xl font-extrabold tracking-tight">Tenants</h1>
-  <a href="/manage/tenants/new" class="bg-signal text-[#241f00] font-bold px-4 py-2.5 rounded-xl hover:brightness-95">+ Invite tenant</a>
+  <div class="flex gap-2">
+    <a href="/manage/tenants/import" class="border border-linestrong font-bold px-4 py-2.5 rounded-xl hover:border-ink">Bulk import (CSV)</a>
+    <a href="/manage/tenants/new" class="bg-signal text-[#241f00] font-bold px-4 py-2.5 rounded-xl hover:brightness-95">+ Invite tenant</a>
+  </div>
 </div>
 
 <div class="bg-white border border-line rounded-xl2 overflow-hidden">
