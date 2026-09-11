@@ -21,6 +21,10 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
         $routes->get('properties/mine', 'PropertiesController::mine');
         $routes->get('properties/mine/residents', 'PropertiesController::residents');
         $routes->get('lockers/availability', 'PropertiesController::lockerAvailability');
+        $routes->post('lockers/recommend-size', 'PropertiesController::recommendSize');
+
+        $routes->get('public-sites', 'PublicSitesController::index');
+        $routes->get('public-sites/(:num)/availability', 'PublicSitesController::availability/$1');
         $routes->post('reservations', 'ReservationsController::create');
         $routes->get('reservations/mine', 'ReservationsController::mine');
         $routes->post('reservations/(:num)/cancel', 'ReservationsController::cancel/$1');
@@ -29,6 +33,10 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
 
         $routes->post('maintenance-tickets', 'MaintenanceController::create');
         $routes->get('maintenance-tickets/mine', 'MaintenanceController::mine');
+
+        $routes->post('pre-alerts', 'PreAlertsController::create');
+        $routes->get('pre-alerts/mine', 'PreAlertsController::mine');
+        $routes->post('pre-alerts/(:num)/cancel', 'PreAlertsController::cancel/$1');
 
         $routes->post('me/push-token', 'AccountController::registerPushToken');
 
@@ -74,6 +82,16 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'su
     $routes->post('pricing', 'PricingController::update');
 
     $routes->get('audit-log', 'AuditLogController::index');
+
+    $routes->get('hardware', 'HardwareController::index');
+
+    $routes->get('billing', 'BillingController::index');
+    $routes->post('billing/(:num)/fee', 'BillingController::setFee/$1');
+    $routes->post('billing/generate', 'BillingController::generateInvoices');
+    $routes->post('billing/(:num)/paid', 'BillingController::markPaid/$1');
+
+    $routes->get('broadcast', 'BroadcastController::index');
+    $routes->post('broadcast/send', 'BroadcastController::send');
 });
 
 // ---------------------------------------------------------------------
@@ -112,5 +130,8 @@ $routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => '
 
         $routes->get('branding', 'BrandingController::edit');
         $routes->post('branding', 'BrandingController::update');
+
+        $routes->get('broadcast', 'BroadcastController::index');
+        $routes->post('broadcast/send', 'BroadcastController::send');
     });
 });

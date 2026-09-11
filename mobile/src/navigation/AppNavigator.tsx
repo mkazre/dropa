@@ -7,6 +7,8 @@ import PaymentScreen from '../screens/PaymentScreen';
 import ParcelDetailScreen from '../screens/ParcelDetailScreen';
 import CollectScreen from '../screens/CollectScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import PublicLockersScreen from '../screens/PublicLockersScreen';
+import TrackDeliveriesScreen from '../screens/TrackDeliveriesScreen';
 import type { AppStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -21,6 +23,8 @@ export default function AppNavigator() {
       <Stack.Screen name="ParcelDetail" component={ParcelDetailScreen} />
       <Stack.Screen name="Collect" component={CollectScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+      <Stack.Screen name="PublicLockers" component={PublicLockersScreen} />
+      <Stack.Screen name="TrackDeliveries" component={TrackDeliveriesScreen} />
     </Stack.Navigator>
   );
 }

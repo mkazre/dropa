@@ -8,6 +8,7 @@ use App\Libraries\Hardware\HardwareProviderFactory;
 use App\Libraries\ReservationService;
 use App\Models\LockerModel;
 use App\Models\LockerRackModel;
+use App\Models\PropertyModel;
 use App\Models\ReservationModel;
 use App\Models\UnitModel;
 use CodeIgniter\Shield\Models\UserModel;
@@ -20,23 +21,38 @@ class ReservationsController extends BaseApiController
      * peer-to-peer send, names a neighbour's unit to reserve it for them
      * instead (the sender is dropping it off in person, so no deposit code
      * needs to change hands).
+     *
+     * A signed-in user can also book at a public/pay-per-use site (mall,
+     * business centre) they aren't a resident of, by passing that site's
+     * `property_id` — peer-to-peer sending only makes sense at one's own
+     * property, so the two options are mutually exclusive.
      */
     public function create()
     {
-        $user               = $this->currentUser();
-        $size               = $this->request->getJsonVar('size');
+        $user                = $this->currentUser();
+        $size                = $this->request->getJsonVar('size');
         $recipientUnitNumber = $this->request->getJsonVar('recipient_unit_number');
+        $publicPropertyId    = $this->request->getJsonVar('property_id');
 
-        if (empty($user->property_id)) {
-            return $this->failForbidden('Your account is not linked to a property yet.');
-        }
         if (! in_array($size, ['S', 'M', 'L', 'XL'], true)) {
             return $this->failValidationErrors('size must be one of S, M, L, XL.');
         }
 
+        $propertyId = (int) $user->property_id;
+
+        if (! empty($publicPropertyId)) {
+            $site = model(PropertyModel::class)->where('type', 'public_site')->where('status', 'active')->find($publicPropertyId);
+            if ($site === null) {
+                return $this->fail('That is not an available public locker site.');
+            }
+            $propertyId = (int) $publicPropertyId;
+        } elseif (empty($user->property_id)) {
+            return $this->failForbidden('Your account is not linked to a property yet.');
+        }
+
         $recipientId = null;
-        if (! empty($recipientUnitNumber)) {
-            $unit = model(UnitModel::class)->where('property_id', $user->property_id)->where('unit_number', $recipientUnitNumber)->first();
+        if (! empty($recipientUnitNumber) && empty($publicPropertyId)) {
+            $unit = model(UnitModel::class)->where('property_id', $propertyId)->where('unit_number', $recipientUnitNumber)->first();
             $recipient = $unit ? (new UserModel())->where('unit_id', $unit['id'])->first() : null;
 
             if ($recipient === null) {
@@ -46,7 +62,7 @@ class ReservationsController extends BaseApiController
         }
 
         try {
-            $reservation = (new ReservationService())->reserve((int) $user->property_id, (int) $user->id, $size, $recipientId);
+            $reservation = (new ReservationService())->reserve($propertyId, (int) $user->id, $size, $recipientId);
         } catch (RuntimeException $e) {
             return $this->fail($e->getMessage());
         }

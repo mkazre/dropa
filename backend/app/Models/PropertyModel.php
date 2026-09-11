@@ -13,7 +13,7 @@ class PropertyModel extends Model
     protected $useTimestamps    = true;
     protected $allowedFields    = [
         'name', 'type', 'address', 'lat', 'lng', 'logo_url', 'brand_color',
-        'reservation_hold_hours', 'status',
+        'reservation_hold_hours', 'status', 'subscription_monthly_fee',
     ];
     protected $returnType       = 'array';
 }

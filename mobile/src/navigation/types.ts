@@ -5,12 +5,14 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   Tabs: undefined;
-  ReserveSize: undefined;
+  ReserveSize: { publicSite?: { id: number; name: string } } | undefined;
   ReserveShare: { reservationId: number };
   Payment: { reservationId: number };
   ParcelDetail: { parcelId: number };
   Collect: undefined;
   ChangePassword: undefined;
+  PublicLockers: undefined;
+  TrackDeliveries: undefined;
 };
 
 export type TabParamList = {

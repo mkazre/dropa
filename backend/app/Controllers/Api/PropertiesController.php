@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers\Api;
 
+use App\Libraries\LockerSizeRecommender;
 use App\Models\LockerModel;
 use App\Models\PropertyModel;
 use CodeIgniter\Shield\Models\UserModel;
@@ -38,6 +39,28 @@ class PropertiesController extends BaseApiController
         }
 
         return $this->respond($counts);
+    }
+
+    /** Suggest a locker size from a package's weight/dimensions — used when the sender knows them upfront. */
+    public function recommendSize()
+    {
+        $weight = $this->request->getJsonVar('weight_kg');
+        $length = $this->request->getJsonVar('length_cm');
+        $width  = $this->request->getJsonVar('width_cm');
+        $height = $this->request->getJsonVar('height_cm');
+
+        $size = LockerSizeRecommender::recommend(
+            $weight !== null ? (float) $weight : null,
+            $length !== null ? (float) $length : null,
+            $width !== null ? (float) $width : null,
+            $height !== null ? (float) $height : null,
+        );
+
+        if ($size === null) {
+            return $this->fail("That's larger than our biggest locker (XL) — this parcel won't fit.");
+        }
+
+        return $this->respond(['size' => $size]);
     }
 
     /** Other residents at the same property, for the "send to a neighbour" recipient search. */

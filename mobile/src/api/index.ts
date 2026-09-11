@@ -28,13 +28,30 @@ export const PropertiesApi = {
   mine: () => apiRequest('/properties/mine'),
   availability: () => apiRequest<LockerAvailability>('/lockers/availability'),
   residents: (q: string) => apiRequest<Resident[]>(`/properties/mine/residents?q=${encodeURIComponent(q)}`),
+  recommendSize: (dims: { weight_kg?: number; length_cm?: number; width_cm?: number; height_cm?: number }) =>
+    apiRequest<{ size: LockerSize }>('/lockers/recommend-size', { method: 'POST', body: dims }),
+};
+
+export type PublicSite = {
+  id: number;
+  name: string;
+  address: string | null;
+};
+
+export const PublicSitesApi = {
+  list: () => apiRequest<PublicSite[]>('/public-sites'),
+  availability: (propertyId: number) => apiRequest<LockerAvailability>(`/public-sites/${propertyId}/availability`),
 };
 
 export const ReservationsApi = {
-  create: (size: LockerSize, recipientUnitNumber?: string) =>
+  create: (size: LockerSize, opts?: { recipientUnitNumber?: string; publicPropertyId?: number }) =>
     apiRequest<Reservation>('/reservations', {
       method: 'POST',
-      body: { size, recipient_unit_number: recipientUnitNumber || undefined },
+      body: {
+        size,
+        recipient_unit_number: opts?.recipientUnitNumber || undefined,
+        property_id: opts?.publicPropertyId,
+      },
     }),
   mine: () => apiRequest<Reservation[]>('/reservations/mine'),
   cancel: (id: number) => apiRequest<void>(`/reservations/${id}/cancel`, { method: 'POST' }),
@@ -75,4 +92,21 @@ export const MaintenanceApi = {
   report: (issue: string, parcelId?: number) =>
     apiRequest<MaintenanceTicket>('/maintenance-tickets', { method: 'POST', body: { issue, parcel_id: parcelId ?? null } }),
   mine: () => apiRequest<MaintenanceTicket[]>('/maintenance-tickets/mine'),
+};
+
+export type Prealert = {
+  id: number;
+  courier: string;
+  tracking_number: string;
+  size: LockerSize;
+  status: 'watching' | 'out_for_delivery' | 'reserved' | 'cancelled';
+  reservation_id: number | null;
+  created_at: string;
+};
+
+export const PreAlertsApi = {
+  create: (courier: string, trackingNumber: string, size: LockerSize) =>
+    apiRequest<Prealert>('/pre-alerts', { method: 'POST', body: { courier, tracking_number: trackingNumber, size } }),
+  mine: () => apiRequest<Prealert[]>('/pre-alerts/mine'),
+  cancel: (id: number) => apiRequest<void>(`/pre-alerts/${id}/cancel`, { method: 'POST' }),
 };

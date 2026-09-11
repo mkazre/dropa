@@ -70,6 +70,15 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
+        <View style={styles.linksRow}>
+          <Pressable onPress={() => navigation.navigate('TrackDeliveries')}>
+            <Text style={styles.linkText}>Track a delivery ›</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate('PublicLockers')}>
+            <Text style={styles.linkText}>Public lockers ›</Text>
+          </Pressable>
+        </View>
+
         <Text style={styles.sectionLabel}>Awaiting collection</Text>
         {parcels.length === 0 ? (
           <View style={styles.emptyCard}>
@@ -103,6 +112,8 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, color: colors.ink },
   propertyLine: { color: colors.muted, fontSize: 13.5, marginTop: 4 },
   tiles: { flexDirection: 'row', gap: 12, marginTop: 22 },
+  linksRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 },
+  linkText: { color: colors.signalDeep, fontWeight: '700', fontSize: 12.5 },
   tile: { flex: 1, borderRadius: radius.lg - 2, padding: 16, borderWidth: 1.5, borderColor: colors.line, backgroundColor: '#fff' },
   tilePrime: { backgroundColor: colors.ink, borderColor: colors.ink },
   glyph: { width: 36, height: 36, borderRadius: 10, backgroundColor: colors.signal, alignItems: 'center', justifyContent: 'center', marginBottom: 36 },

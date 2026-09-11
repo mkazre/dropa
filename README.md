@@ -55,6 +55,9 @@ testing without going through the login flow.
 - Pricing (`pricing_rules`): Super Admin sets the platform default per size (`/admin/pricing`); a Body
   Corporate can override any size for their own property (`/manage/pricing`) or leave it blank to keep
   inheriting the default. `PricingRuleModel::forPropertyAndSize()` resolves which one applies.
+- Size auto-recommendation: `App\Libraries\LockerSizeRecommender` maps weight/dimensions to S/M/L/XL against
+  the same thresholds shown in the size picker (`POST /api/v1/lockers/recommend-size`) — used when a sender
+  knows the package's size upfront instead of guessing.
 
 ### Tenant management
 
@@ -82,6 +85,19 @@ testing without going through the login flow.
   scoped to the property like a tenant but with no unit. `PropertyOwnerFilter` restricts tenants/staff/payments/
   gateways/pricing/branding to `property_admin`/`superadmin` — staff only reach the dashboard, parcels view and
   maintenance triage (`PropertyAdminFilter`, which still allows staff through to those).
+- Pre-alerts (`parcel_prealerts`): a tenant registers a courier tracking number ahead of time
+  (`POST /api/v1/pre-alerts`); `php spark parcels:check-prealerts` (run on a schedule) checks each one via
+  `App\Libraries\Tracking\CourierTrackingProviderInterface` and auto-reserves a locker once it's out for
+  delivery, notifying the tenant. No real courier tracking API is wired up yet (same situation as Hive-Box) —
+  `MockCourierTrackingProvider` simulates "out for delivery" a couple of minutes after registration so the
+  whole flow is demoable/testable; swapping in a real aggregator (AfterShip, Ship24, or a specific courier's
+  API) only means implementing the interface.
+- Public-locker sites: a property with `type = public_site` (`/admin/properties/new`) is open to *any*
+  signed-in app user, not just its own residents — `GET /api/v1/public-sites` lists them,
+  `POST /api/v1/reservations` accepts an optional `property_id` to book at one instead of your own property
+  (peer-to-peer sending is disabled for these, since "send to a neighbour" only makes sense at one's own
+  complex). Pricing/payment reuse the same per-property engine, so a public site can be configured as
+  genuinely pay-per-use.
 
 ### Notifications
 
@@ -92,10 +108,12 @@ reservation/parcel action). Wired into: parcel deposited (pickup PIN to the tena
 tenant invites. Configure real credentials in `.env` (see the `EMAIL`/`SMS` sections in `env`) — without them,
 everything still works end-to-end, just with notifications logged as `failed`.
 
-Two scheduled jobs (run via cron / Windows Task Scheduler):
+Scheduled jobs (run via cron / Windows Task Scheduler):
 ```
-php spark reservations:expire   # releases lockers whose hold window passed without a deposit
-php spark parcels:remind        # reminds a tenant (at most once/day) about an uncollected parcel
+php spark reservations:expire       # releases lockers whose hold window passed without a deposit
+php spark parcels:remind            # reminds a tenant (at most once/day) about an uncollected parcel
+php spark parcels:check-prealerts   # auto-reserves a locker once a tracked courier is out for delivery
+php spark billing:generate-invoices # generates this month's subscription invoice per property (also has an "Generate" button in /admin/billing)
 ```
 
 ### Security & operations
@@ -114,6 +132,16 @@ php spark parcels:remind        # reminds a tenant (at most once/day) about an u
   returns the locker to `available`.
 - White-label branding: a Body Corporate sets their own logo URL and accent colour at `/manage/branding` —
   both are returned from `/api/v1/me` and shown in the tenant app's Home screen.
+- Hardware fleet monitoring (`/admin/hardware`): every locker rack across every property — provider, online/
+  offline status, and a live available/occupied/reserved/out-of-service breakdown — plus the last inbound
+  webhook timestamp per provider (Hive-Box/Ozow/PayFast), so a Super Admin can see whether an integration has
+  gone quiet.
+- Billing (`/admin/billing`): a per-property monthly subscription fee, invoice generation (button or
+  `billing:generate-invoices`, idempotent per property/month), and mark-as-paid.
+- Broadcast (`/admin/broadcast` platform-wide or filtered to one property; `/manage/broadcast` for a Body
+  Corporate's own residents only): sends a push + email to every matching tenant through the same
+  `NotificationService` as parcel updates. This is the "broadcast" half of the plan's CMS feature — managing
+  the marketing website's own content is not built.
 
 ## Mobile (`/mobile`)
 
@@ -138,7 +166,11 @@ Sign in with any of the demo accounts above (e.g. `tenant@dropa.app` / `DropaTen
   at the locker — `src/context/AccessibilityContext.tsx`), change password, log out
 - A parcel's detail screen also has "Report a problem with this locker", filing a maintenance ticket the Body
   Corporate can see and act on
-- Home shows the property's own logo/accent colour when the Body Corporate has set one
+- Home shows the property's own logo/accent colour when the Body Corporate has set one, and links to **Track
+  a delivery** (register a courier tracking number, watch it move from "watching" to "locker reserved") and
+  **Public lockers** (browse pay-per-use sites and reserve one, regardless of which property you actually live at)
+- Reserve screen: an optional "know the package's size?" section calls the size-recommendation endpoint and
+  pre-selects a locker size from weight/dimensions
 - Push notifications: registers the device's Expo push token with the backend on login
   (`app/Libraries/Notifications/PushChannel.php` sends to it)
 

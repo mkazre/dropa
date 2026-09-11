@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ChoiceCard, Button } from '../components/ui';
-import { ReservationsApi, PropertiesApi } from '../api';
+import { ReservationsApi, PropertiesApi, PublicSitesApi } from '../api';
 import { ApiError } from '../api/client';
 import type { LockerAvailability, LockerSize, Resident } from '../api/types';
 import { colors, radius } from '../theme/tokens';
@@ -18,7 +18,9 @@ const SIZES: { key: LockerSize; label: string; blurb: string }[] = [
   { key: 'XL', label: 'Extra large', blurb: 'Large box · up to 25 kg' },
 ];
 
-export default function ReserveSizeScreen({ navigation }: Props) {
+export default function ReserveSizeScreen({ navigation, route }: Props) {
+  const publicSite = route.params?.publicSite;
+
   const [availability, setAvailability] = useState<LockerAvailability | null>(null);
   const [selected, setSelected] = useState<LockerSize>('M');
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +31,19 @@ export default function ReserveSizeScreen({ navigation }: Props) {
   const [recipient, setRecipient] = useState<Resident | null>(null);
   const [suggestions, setSuggestions] = useState<Resident[]>([]);
 
+  const [showDims, setShowDims] = useState(false);
+  const [weight, setWeight] = useState('');
+  const [length, setLength] = useState('');
+  const [width, setWidth] = useState('');
+  const [height, setHeight] = useState('');
+  const [recoNote, setRecoNote] = useState<string | null>(null);
+
   useEffect(() => {
-    PropertiesApi.availability().then(setAvailability).catch(() => {});
-  }, []);
+    const loadAvailability = publicSite
+      ? PublicSitesApi.availability(publicSite.id)
+      : PropertiesApi.availability();
+    loadAvailability.then(setAvailability).catch(() => {});
+  }, [publicSite]);
 
   useEffect(() => {
     if (!forSomeoneElse || recipient || recipientQuery.trim().length < 1) {
@@ -44,6 +56,22 @@ export default function ReserveSizeScreen({ navigation }: Props) {
     return () => clearTimeout(timeout);
   }, [recipientQuery, forSomeoneElse, recipient]);
 
+  const recommendSize = async () => {
+    setRecoNote(null);
+    try {
+      const { size } = await PropertiesApi.recommendSize({
+        weight_kg: weight ? Number(weight) : undefined,
+        length_cm: length ? Number(length) : undefined,
+        width_cm: width ? Number(width) : undefined,
+        height_cm: height ? Number(height) : undefined,
+      });
+      setSelected(size);
+      setRecoNote(`We suggest ${SIZES.find((s) => s.key === size)?.label} for that parcel.`);
+    } catch (e) {
+      setRecoNote(e instanceof ApiError ? e.message : "Couldn't work out a size for that.");
+    }
+  };
+
   const confirm = async () => {
     if (forSomeoneElse && !recipient) {
       setError('Please pick who this parcel is for.');
@@ -52,7 +80,10 @@ export default function ReserveSizeScreen({ navigation }: Props) {
     setError(null);
     setLoading(true);
     try {
-      const reservation = await ReservationsApi.create(selected, recipient?.unit_number);
+      const reservation = await ReservationsApi.create(selected, {
+        recipientUnitNumber: recipient?.unit_number,
+        publicPropertyId: publicSite?.id,
+      });
       navigation.replace('ReserveShare', { reservationId: reservation.id });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Could not reserve a locker. Please try again.');
@@ -65,53 +96,77 @@ export default function ReserveSizeScreen({ navigation }: Props) {
     <SafeAreaView style={styles.screen}>
       <View style={styles.topbar}>
         <Pressable onPress={() => navigation.goBack()}><Text style={styles.back}>‹</Text></Pressable>
-        <Text style={styles.h2}>Expecting a parcel</Text>
+        <Text style={styles.h2}>{publicSite ? publicSite.name : 'Expecting a parcel'}</Text>
       </View>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 22 }} keyboardShouldPersistTaps="handled">
-        <Text style={styles.label}>Who's it for?</Text>
-        <View style={styles.switch}>
-          <Pressable
-            style={[styles.switchBtn, !forSomeoneElse && styles.switchBtnOn]}
-            onPress={() => { setForSomeoneElse(false); setRecipient(null); setRecipientQuery(''); }}
-          >
-            <Text style={[styles.switchText, !forSomeoneElse && styles.switchTextOn]}>Me</Text>
-          </Pressable>
-          <Pressable style={[styles.switchBtn, forSomeoneElse && styles.switchBtnOn]} onPress={() => setForSomeoneElse(true)}>
-            <Text style={[styles.switchText, forSomeoneElse && styles.switchTextOn]}>A neighbour</Text>
-          </Pressable>
-        </View>
+        {!publicSite && (
+          <>
+            <Text style={styles.label}>Who's it for?</Text>
+            <View style={styles.switch}>
+              <Pressable
+                style={[styles.switchBtn, !forSomeoneElse && styles.switchBtnOn]}
+                onPress={() => { setForSomeoneElse(false); setRecipient(null); setRecipientQuery(''); }}
+              >
+                <Text style={[styles.switchText, !forSomeoneElse && styles.switchTextOn]}>Me</Text>
+              </Pressable>
+              <Pressable style={[styles.switchBtn, forSomeoneElse && styles.switchBtnOn]} onPress={() => setForSomeoneElse(true)}>
+                <Text style={[styles.switchText, forSomeoneElse && styles.switchTextOn]}>A neighbour</Text>
+              </Pressable>
+            </View>
 
-        {forSomeoneElse && (
-          <View style={{ marginBottom: 10 }}>
-            {recipient ? (
-              <View style={styles.recipientChip}>
-                <Text style={styles.recipientChipText}>{recipient.full_name} · Unit {recipient.unit_number}</Text>
-                <Pressable onPress={() => { setRecipient(null); setRecipientQuery(''); }}>
-                  <Text style={styles.recipientChipClear}>Change</Text>
-                </Pressable>
+            {forSomeoneElse && (
+              <View style={{ marginBottom: 10 }}>
+                {recipient ? (
+                  <View style={styles.recipientChip}>
+                    <Text style={styles.recipientChipText}>{recipient.full_name} · Unit {recipient.unit_number}</Text>
+                    <Pressable onPress={() => { setRecipient(null); setRecipientQuery(''); }}>
+                      <Text style={styles.recipientChipClear}>Change</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <>
+                    <TextInput
+                      value={recipientQuery}
+                      onChangeText={setRecipientQuery}
+                      placeholder="Search by name or unit number"
+                      placeholderTextColor={colors.muted}
+                      style={styles.input}
+                    />
+                    {suggestions.map((r) => (
+                      <Pressable key={r.id} style={styles.suggestionRow} onPress={() => { setRecipient(r); setSuggestions([]); }}>
+                        <Text style={styles.suggestionText}>{r.full_name} · Unit {r.unit_number}</Text>
+                      </Pressable>
+                    ))}
+                  </>
+                )}
+                <Text style={styles.hint}>You'll drop this off yourself — no code to share, they'll just be notified.</Text>
               </View>
-            ) : (
-              <>
-                <TextInput
-                  value={recipientQuery}
-                  onChangeText={setRecipientQuery}
-                  placeholder="Search by name or unit number"
-                  placeholderTextColor={colors.muted}
-                  style={styles.input}
-                />
-                {suggestions.map((r) => (
-                  <Pressable key={r.id} style={styles.suggestionRow} onPress={() => { setRecipient(r); setSuggestions([]); }}>
-                    <Text style={styles.suggestionText}>{r.full_name} · Unit {r.unit_number}</Text>
-                  </Pressable>
-                ))}
-              </>
             )}
-            <Text style={styles.hint}>You'll drop this off yourself — no code to share, they'll just be notified.</Text>
-          </View>
+          </>
         )}
 
         <Text style={[styles.label, { marginTop: 18 }]}>Size</Text>
         <Text style={styles.sub}>Not sure? Medium fits most parcels — you can always ask the courier.</Text>
+
+        {showDims ? (
+          <View style={styles.dimsBox}>
+            <View style={styles.dimsRow}>
+              <TextInput value={weight} onChangeText={setWeight} placeholder="Weight (kg)" keyboardType="decimal-pad" placeholderTextColor={colors.muted} style={[styles.dimsInput, { flex: 1 }]} />
+            </View>
+            <View style={styles.dimsRow}>
+              <TextInput value={length} onChangeText={setLength} placeholder="Length (cm)" keyboardType="decimal-pad" placeholderTextColor={colors.muted} style={[styles.dimsInput, { flex: 1 }]} />
+              <TextInput value={width} onChangeText={setWidth} placeholder="Width (cm)" keyboardType="decimal-pad" placeholderTextColor={colors.muted} style={[styles.dimsInput, { flex: 1 }]} />
+              <TextInput value={height} onChangeText={setHeight} placeholder="Height (cm)" keyboardType="decimal-pad" placeholderTextColor={colors.muted} style={[styles.dimsInput, { flex: 1 }]} />
+            </View>
+            <Button title="Suggest a size" variant="ghost" onPress={recommendSize} style={{ marginTop: 8 }} />
+            {recoNote ? <Text style={styles.recoNote}>{recoNote}</Text> : null}
+          </View>
+        ) : (
+          <Pressable onPress={() => setShowDims(true)}>
+            <Text style={styles.link}>Know the package's size? Let us suggest a locker.</Text>
+          </Pressable>
+        )}
+
         {SIZES.map((s) => {
           const count = availability?.[s.key];
           const full = count === 0;
@@ -158,5 +213,10 @@ const styles = StyleSheet.create({
   recipientChipText: { fontWeight: '700', color: colors.ink, fontSize: 14 },
   recipientChipClear: { fontWeight: '700', color: colors.signalDeep, fontSize: 13 },
   hint: { color: colors.muted, fontSize: 12, marginTop: 8, lineHeight: 17 },
+  link: { color: colors.signalDeep, fontSize: 12.5, fontWeight: '700', marginBottom: 12 },
+  dimsBox: { backgroundColor: colors.cream, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.md, padding: 14, marginBottom: 12 },
+  dimsRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  dimsInput: { borderWidth: 1.5, borderColor: colors.lineStrong, borderRadius: 11, padding: 11, fontSize: 13.5, color: colors.ink, backgroundColor: '#fff' },
+  recoNote: { color: colors.ok, fontSize: 12.5, fontWeight: '700', marginTop: 8 },
   error: { color: colors.alert, fontSize: 13, fontWeight: '600', marginTop: 14 },
 });
