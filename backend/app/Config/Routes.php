@@ -54,6 +54,10 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
     $routes->post('parcels/deposit', 'ParcelsController::deposit', ['filter' => 'throttle:20,60']);
     $routes->post('parcels/collect', 'ParcelsController::collect', ['filter' => 'throttle:10,60']);
 
+    // Marketing website's public "bring Dropa to your property" lead form.
+    $routes->get('onboarding-requests/status', 'OnboardingController::status');
+    $routes->post('onboarding-requests', 'OnboardingController::request', ['filter' => 'throttle:5,300']);
+
     // Browser landing page after an Ozow/PayFast hosted-page redirect.
     $routes->get('payments/return', 'PaymentsController::returnPage');
 
@@ -93,6 +97,10 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => ['s
 
     $routes->get('broadcast', 'BroadcastController::index');
     $routes->post('broadcast/send', 'BroadcastController::send');
+
+    $routes->get('onboarding-requests', 'OnboardingRequestsController::index');
+    $routes->post('onboarding-requests/toggle', 'OnboardingRequestsController::toggle');
+    $routes->post('onboarding-requests/(:num)/status', 'OnboardingRequestsController::updateStatus/$1');
 });
 
 // ---------------------------------------------------------------------

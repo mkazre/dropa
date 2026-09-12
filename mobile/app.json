@@ -20,7 +20,11 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -55,6 +59,12 @@
           "photosPermission": "Dropa uses your photo library to attach proof of an offline payment."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "68b3cc7d-f563-4809-b220-1e3b991a0fe2"
+      }
+    },
+    "owner": "mkazre"
   }
 }

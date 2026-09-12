@@ -6,3 +6,4 @@
 <a href="/admin/hardware" class="block px-3 py-2 rounded-lg hover:bg-white/10">Hardware</a>
 <a href="/admin/billing" class="block px-3 py-2 rounded-lg hover:bg-white/10">Billing</a>
 <a href="/admin/broadcast" class="block px-3 py-2 rounded-lg hover:bg-white/10">Broadcast</a>
+<a href="/admin/onboarding-requests" class="block px-3 py-2 rounded-lg hover:bg-white/10">Onboarding Requests</a>
