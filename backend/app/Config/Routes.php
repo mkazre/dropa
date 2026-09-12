@@ -4,6 +4,7 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 $routes->get('/', 'Home::index');
+$routes->get('post-login', 'PostLoginController::index');
 
 service('auth')->routes($routes);
 

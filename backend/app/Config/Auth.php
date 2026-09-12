@@ -72,10 +72,15 @@ class Auth extends ShieldAuth
      *
      * If you need more flexibility you can override the `getUrl()` method
      * to apply any logic you may need.
+     *
+     * 'login' points at PostLoginController instead of '/' — Shield's
+     * default sends everyone to the site root, which is just the stock
+     * CodeIgniter welcome page here; the controller sends each role to its
+     * own panel (/admin or /manage) instead.
      */
     public array $redirects = [
         'register'          => '/',
-        'login'             => '/',
+        'login'             => 'post-login',
         'logout'            => 'login',
         'force_reset'       => '/',
         'permission_denied' => '/',
