@@ -2,83 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title><?= lang('Errors.pageNotFound') ?></title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page not found — Dropa</title>
     <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
-        }
         body {
-            height: 100%;
-            background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color: #777;
-            font-weight: 300;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FCFBF7;
+            font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #211E17;
         }
-        h1 {
-            font-weight: lighter;
-            letter-spacing: normal;
-            font-size: 3rem;
-            margin-top: 0;
-            margin-bottom: 0;
-            color: #222;
+        .wrap { text-align: center; padding: 2rem; }
+        .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.1rem; margin-bottom: 2rem; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; background: #FFC400; display: inline-block; }
+        h1 { font-size: 2.25rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 0.5rem; }
+        p { color: #8C887C; margin: 0 0 1.5rem; }
+        a.home {
+            display: inline-block; background: #211E17; color: #fff; font-weight: 700;
+            padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none;
         }
-        .wrap {
-            max-width: 1024px;
-            margin: 5rem auto;
-            padding: 2rem;
-            background: #fff;
-            text-align: center;
-            border: 1px solid #efefef;
-            border-radius: 0.5rem;
-            position: relative;
-        }
-        pre {
-            white-space: normal;
-            margin-top: 1.5rem;
-        }
-        code {
-            background: #fafafa;
-            border: 1px solid #efefef;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            display: block;
-        }
-        p {
-            margin-top: 1.5rem;
-        }
-        .footer {
-            margin-top: 2rem;
-            border-top: 1px solid #efefef;
-            padding: 1em 2em 0 2em;
-            font-size: 85%;
-            color: #999;
-        }
-        a:active,
-        a:link,
-        a:visited {
-            color: #dd4814;
-        }
+        a.home:hover { filter: brightness(1.1); }
     </style>
 </head>
 <body>
     <div class="wrap">
-        <h1>404</h1>
-
+        <div class="brand"><span class="dot"></span>Dropa</div>
+        <h1>404 — Page not found</h1>
         <p>
             <?php if (ENVIRONMENT !== 'production') : ?>
                 <?= nl2br(esc($message)) ?>
             <?php else : ?>
-                <?= lang('Errors.sorryCannotFind') ?>
+                That page doesn&rsquo;t exist, or has moved.
             <?php endif; ?>
         </p>
+        <a class="home" href="/login">Go to login</a>
     </div>
 </body>
 </html>
