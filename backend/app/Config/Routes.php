@@ -12,6 +12,13 @@ service('auth')->routes($routes);
 // REST API — RN app, website, kiosk. Token-authenticated except where noted.
 // ---------------------------------------------------------------------
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
+    // Browsers preflight any JSON POST with an OPTIONS request before sending it —
+    // the 'cors' filter (see Config\Filters) answers it, this route just needs to exist
+    // so the request doesn't 404 before the filter gets a chance to run.
+    $routes->options('(:any)', static function () {
+        return service('response')->setStatusCode(204);
+    });
+
     $routes->post('auth/login', 'AuthController::login', ['filter' => 'throttle:10,300']);
 
     $routes->group('', ['filter' => 'tokens'], static function ($routes) {
