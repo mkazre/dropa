@@ -9,9 +9,12 @@ export default function Home() {
           Dropa
         </div>
         <nav className="flex items-center gap-6 text-sm font-semibold">
-          <Link href="/drop-off" className="hover:text-signal-deep">Drop off a parcel</Link>
-          <Link href="/collect" className="hover:text-signal-deep">Collect a parcel</Link>
-          <Link href="/onboard" className="bg-ink text-white px-4 py-2.5 rounded-xl hover:brightness-110">
+          <Link href="/drop-off" className="whitespace-nowrap transition-colors hover:text-signal-deep">Drop off a parcel</Link>
+          <Link href="/collect" className="whitespace-nowrap transition-colors hover:text-signal-deep">Collect a parcel</Link>
+          <Link
+            href="/onboard"
+            className="whitespace-nowrap bg-ink text-white px-4 py-2.5 rounded-xl transition-all hover:brightness-110 hover:-translate-y-0.5 hover:shadow-md"
+          >
             Register your property
           </Link>
         </nav>
@@ -27,11 +30,17 @@ export default function Home() {
             when they&apos;re expecting a delivery, couriers drop off with a code — no accounts, no meetups — and
             the locker frees itself back up the moment it&apos;s collected.
           </p>
-          <div className="flex gap-3 mt-8">
-            <Link href="/onboard" className="bg-signal text-[#241f00] font-bold px-5 py-3.5 rounded-xl hover:brightness-95">
+          <div className="flex flex-wrap gap-3 mt-8">
+            <Link
+              href="/onboard"
+              className="whitespace-nowrap bg-signal text-[#241f00] font-bold px-5 py-3.5 rounded-xl transition-all hover:brightness-95 hover:-translate-y-0.5 hover:shadow-md"
+            >
               Bring Dropa to your property
             </Link>
-            <Link href="/drop-off" className="border-1.5 border-line-strong font-bold px-5 py-3.5 rounded-xl hover:border-ink">
+            <Link
+              href="/drop-off"
+              className="whitespace-nowrap bg-white border-2 border-line-strong text-ink font-bold px-5 py-3.5 rounded-xl transition-all hover:border-ink hover:bg-cream hover:-translate-y-0.5 hover:shadow-md"
+            >
               I have a drop-off code
             </Link>
           </div>
