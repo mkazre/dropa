@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import ParcelsScreen from '../screens/ParcelsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -9,10 +9,10 @@ import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const icons: Record<keyof TabParamList, string> = {
-  Home: '⌂',
-  Parcels: '▭',
-  Profile: '◔',
+const icons: Record<keyof TabParamList, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
+  Home: { active: 'home', inactive: 'home-outline' },
+  Parcels: { active: 'cube', inactive: 'cube-outline' },
+  Profile: { active: 'person-circle', inactive: 'person-circle-outline' },
 };
 
 export default function TabsNavigator() {
@@ -22,7 +22,11 @@ export default function TabsNavigator() {
         headerShown: false,
         tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.muted,
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 18, color }}>{icons[route.name as keyof TabParamList]}</Text>,
+        tabBarStyle: { borderTopColor: colors.line, height: 58, paddingBottom: 8, paddingTop: 6 },
+        tabBarIcon: ({ color, focused }) => {
+          const name = icons[route.name as keyof TabParamList];
+          return <Ionicons name={focused ? name.active : name.inactive} size={23} color={color} />;
+        },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
       })}
     >

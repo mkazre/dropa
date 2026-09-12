@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAccessibility } from '../context/AccessibilityContext';
 import { Button, Card } from '../components/ui';
 import { colors } from '../theme/tokens';
+import AppHeader from '../components/AppHeader';
 import type { AppStackParamList } from '../navigation/types';
 
 export default function ProfileScreen() {
@@ -16,7 +17,8 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={{ padding: 22 }}>
+      <AppHeader />
+      <View style={{ paddingHorizontal: 22, paddingBottom: 22 }}>
         <Text style={[styles.header, { fontSize: scale(22) }]}>Profile</Text>
 
         <Card style={{ marginTop: 20 }}>

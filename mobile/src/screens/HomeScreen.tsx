@@ -9,6 +9,7 @@ import { ParcelsApi } from '../api';
 import type { Parcel } from '../api/types';
 import { attributionSuffix } from '../utils/attribution';
 import { colors, radius } from '../theme/tokens';
+import AppHeader from '../components/AppHeader';
 import type { AppStackParamList } from '../navigation/types';
 
 export default function HomeScreen() {
@@ -39,8 +40,9 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <AppHeader />
       <ScrollView
-        contentContainerStyle={{ padding: 22, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 40 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.ink} />}
       >
         <View style={styles.headerRow}>

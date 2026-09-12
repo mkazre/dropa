@@ -9,6 +9,7 @@ import { EmptyState } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { attributionSuffix } from '../utils/attribution';
 import { colors } from '../theme/tokens';
+import AppHeader from '../components/AppHeader';
 import type { AppStackParamList } from '../navigation/types';
 
 const statusLabel: Record<Parcel['status'], string> = {
@@ -35,6 +36,7 @@ export default function ParcelsScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <AppHeader />
       <Text style={styles.header}>Parcels</Text>
       <FlatList
         data={parcels}
@@ -67,7 +69,7 @@ export default function ParcelsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
-  header: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, color: colors.ink, paddingHorizontal: 22, paddingTop: 6 },
+  header: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5, color: colors.ink, paddingHorizontal: 22 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderTopWidth: 1, borderTopColor: colors.line },
   title: { fontSize: 14.5, fontWeight: '700', color: colors.ink },
   sub: { fontSize: 12, color: colors.muted, marginTop: 2 },
