@@ -65,7 +65,7 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
 // ---------------------------------------------------------------------
 // Super Admin panel — platform-wide.
 // ---------------------------------------------------------------------
-$routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'superadmin'], static function ($routes) {
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => ['superadmin', 'nocache']], static function ($routes) {
     $routes->get('/', 'DashboardController::index');
 
     $routes->get('properties', 'PropertiesController::index');
@@ -97,7 +97,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'su
 // ---------------------------------------------------------------------
 // Body Corporate Admin panel — one property.
 // ---------------------------------------------------------------------
-$routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => 'propertyadmin'], static function ($routes) {
+$routes->group('manage', ['namespace' => 'App\Controllers\Manage', 'filter' => ['propertyadmin', 'nocache']], static function ($routes) {
     // Staff (kiosk-assist) can reach these — helping a resident find a
     // parcel's status or logging a fault doesn't require owner-level access.
     $routes->get('/', 'DashboardController::index');

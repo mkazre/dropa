@@ -41,10 +41,7 @@
       </nav>
       <div class="px-6 py-4 border-t border-white/10 text-xs text-white/50">
         <?= esc(auth()->user()->email ?? '') ?>
-        <form method="post" action="/logout" class="mt-2">
-          <?= csrf_field() ?>
-          <button class="text-signal font-bold">Log out</button>
-        </form>
+        <a href="/logout" class="block mt-2 text-signal font-bold">Log out</a>
       </div>
     </aside>
     <main class="flex-1 p-8">

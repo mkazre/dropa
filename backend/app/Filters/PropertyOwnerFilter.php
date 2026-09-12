@@ -9,10 +9,12 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Stricter than PropertyAdminFilter: property_admin or superadmin only —
- * NOT staff. Staff get "limited kiosk-assist permissions" (per the plan),
- * so anything that manages tenants/staff/money/settings for the property
- * routes through this instead of the general propertyadmin filter.
+ * Stricter than PropertyAdminFilter: property_admin only, not staff. Staff
+ * get "limited kiosk-assist permissions" (per the plan), so anything that
+ * manages tenants/staff/money/settings for the property routes through
+ * this instead of the general propertyadmin filter. (Super Admins never
+ * reach this filter at all — PropertyAdminFilter, which runs first on the
+ * whole /manage/* group, already keeps them out; see its docblock.)
  */
 class PropertyOwnerFilter implements FilterInterface
 {
@@ -24,11 +26,11 @@ class PropertyOwnerFilter implements FilterInterface
             return redirect()->to('/login');
         }
 
-        if (! $user->inGroup('property_admin', 'superadmin')) {
+        if (! $user->inGroup('property_admin')) {
             return redirect()->to('/manage')->with('error', 'Body Corporate access only — staff accounts can\'t manage this.');
         }
 
-        if (! $user->inGroup('superadmin') && empty($user->property_id)) {
+        if (empty($user->property_id)) {
             return redirect()->to('/login')->with('error', 'Your account is not linked to a property yet.');
         }
     }

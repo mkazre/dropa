@@ -42,6 +42,7 @@ class Filters extends BaseFilters
         'propertyadmin' => \App\Filters\PropertyAdminFilter::class,
         'propertyowner' => \App\Filters\PropertyOwnerFilter::class,
         'throttle'      => \App\Filters\ThrottleFilter::class,
+        'nocache'       => \App\Filters\NoCacheFilter::class,
     ];
 
     /**
