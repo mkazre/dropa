@@ -87,6 +87,13 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => ['s
     $routes->post('properties/(:num)', 'PropertiesController::update/$1');
     $routes->post('properties/(:num)/delete', 'PropertiesController::delete/$1');
 
+    $routes->get('properties/(:num)/lockers', 'LockerRacksController::index/$1');
+    $routes->post('properties/(:num)/racks', 'LockerRacksController::createRack/$1');
+    $routes->post('racks/(:num)/delete', 'LockerRacksController::deleteRack/$1');
+    $routes->get('racks/(:num)/lockers', 'LockerRacksController::lockers/$1');
+    $routes->post('racks/(:num)/lockers', 'LockerRacksController::createLocker/$1');
+    $routes->post('lockers/(:num)/delete', 'LockerRacksController::deleteLocker/$1');
+
     $routes->get('gateways', 'PaymentGatewaysController::index');
     $routes->post('gateways', 'PaymentGatewaysController::update');
 

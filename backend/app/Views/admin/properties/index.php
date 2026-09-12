@@ -26,7 +26,8 @@
         <td class="px-5 py-3">
           <span class="text-xs font-bold px-2 py-1 rounded-full <?= $p['status'] === 'active' ? 'bg-oksoft text-ok' : 'bg-[#FBEAEA] text-alert' ?>"><?= esc($p['status']) ?></span>
         </td>
-        <td class="px-5 py-3 text-right">
+        <td class="px-5 py-3 text-right space-x-3">
+          <a href="/admin/properties/<?= $p['id'] ?>/lockers" class="text-inksoft font-bold hover:text-ink">Lockers</a>
           <a href="/admin/properties/<?= $p['id'] ?>/edit" class="text-inksoft font-bold hover:text-ink">Edit</a>
         </td>
       </tr>

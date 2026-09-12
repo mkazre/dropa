@@ -22,6 +22,7 @@
         <th class="text-left px-5 py-3">Provider</th>
         <th class="text-left px-5 py-3">Status</th>
         <th class="text-left px-5 py-3">Lockers</th>
+        <th class="px-5 py-3"></th>
       </tr>
     </thead>
     <tbody>
@@ -43,10 +44,13 @@
           <?= (int) ($counts['reserved'] ?? 0) ?> reserved ·
           <?= (int) ($counts['out_of_service'] ?? 0) ?> out of service
         </td>
+        <td class="px-5 py-3 text-right">
+          <a href="/admin/racks/<?= $rack['id'] ?>/lockers" class="text-inksoft font-bold hover:text-ink">Manage</a>
+        </td>
       </tr>
       <?php endforeach; ?>
       <?php if (empty($racks)): ?>
-      <tr><td colspan="5" class="px-5 py-8 text-center text-muted">No locker racks registered yet.</td></tr>
+      <tr><td colspan="6" class="px-5 py-8 text-center text-muted">No locker racks registered yet.</td></tr>
       <?php endif; ?>
     </tbody>
   </table>

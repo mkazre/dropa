@@ -42,6 +42,21 @@
       <?php endforeach; ?>
     </select>
   </div>
+  <?php else: ?>
+  <div class="border-t border-line pt-4 mt-2">
+    <p class="text-xs font-bold text-inksoft uppercase mb-3">First Body Corporate Admin</p>
+    <p class="text-xs text-muted mb-3">Creates their login and emails them a temporary password. Leave blank to add one later from "Edit".</p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-bold text-inksoft mb-1.5">Their name</label>
+        <input name="admin_full_name" class="w-full border border-linestrong rounded-xl px-4 py-3 focus:outline-none focus:border-ink">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-inksoft mb-1.5">Their email</label>
+        <input type="email" name="admin_email" class="w-full border border-linestrong rounded-xl px-4 py-3 focus:outline-none focus:border-ink">
+      </div>
+    </div>
+  </div>
   <?php endif; ?>
 
   <button class="bg-ink text-white font-bold px-5 py-3 rounded-xl hover:brightness-110"><?= $property ? 'Save changes' : 'Create property' ?></button>
